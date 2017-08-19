@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:context="http://www.springframework.org/schema/context"
-    xmlns:task="http://www.springframework.org/schema/task"
-    xmlns:p="http://www.springframework.org/schema/p"
-    xmlns:c="http://www.springframework.org/schema/c"
-    xmlns:util="http://www.springframework.org/schema/util"
-    xsi:schemaLocation="
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:task="http://www.springframework.org/schema/task"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:c="http://www.springframework.org/schema/c"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="
     http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
     http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
     http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
@@ -20,16 +20,16 @@
     <context:component-scan base-package="org.fcrepo"/>
 
 
-        <!-- **********************************
-                        MODESHAPE configuration
-                 ********************************** -->
-        
+    <!-- **********************************
+                    MODESHAPE configuration
+             ********************************** -->
+
     <!-- Authentication Not Enabled -->
     <bean name="modeshapeRepofactory"
-        class="org.fcrepo.kernel.modeshape.spring.ModeShapeRepositoryFactoryBean"
-        p:repositoryConfiguration="${fcrepoModeshapeConfiguration}" />
+          class="org.fcrepo.kernel.modeshape.spring.ModeShapeRepositoryFactoryBean"
+          p:repositoryConfiguration="${fcrepo.modeshape.configuration}" />
 
-    
+
     <!-- Identifier translation chain -->
     <util:list id="translationChain" value-type="org.fcrepo.kernel.api.identifiers.InternalIdentifierConverter">
         <bean class="org.fcrepo.kernel.modeshape.identifiers.HashConverter"/>
@@ -40,31 +40,30 @@
     <!-- *************************************
                JMS/Eventing Configuration
          ************************************* -->
-    
+
     <!-- publishes events from the internal bus to a JMS Topic or Queue.
          "constructor-arg" for both is topic/queue name. -->
-    
-    <!--   JMS Topic -->
-    <bean class="org.fcrepo.jms.JMSTopicPublisher">
-      <constructor-arg value="fedora"/>
+
+    <!--   JMS Topic
+    <bean class="org.fcrepo.jms.JMSQueuePublisher">
+        <constructor-arg value="fedora"/>
     </bean>
-    
+ -->
     <!-- JMS Queue -->
-    <!--
+
     <bean class="org.fcrepo.jms.JMSQueuePublisher">
       <constructor-arg value="fedora"/>
     </bean>
-    -->
-    
-    <!-- ActiveMQ connection -->  
+
+
+    <!-- ActiveMQ connection -->
     <bean id="connectionFactory"
-        class="org.apache.activemq.ActiveMQConnectionFactory" depends-on="jmsBroker"
-        p:brokerURL="vm://${fcrepoJmsHost}:${fcrepoDynamicJmsPort}?create=false"/>
+          class="org.apache.activemq.ActiveMQConnectionFactory" p:brokerURL="tcp://activemq:61616"/>
 
-    <!-- JMS Broker configuration -->
+    <!--
     <bean name="jmsBroker" class="org.apache.activemq.xbean.BrokerFactoryBean"
-      p:config="${fcrepoActivemqConfiguration}" p:start="true"/>
-
+      p:config="${fcrepo.activemq.configuration:classpath:/config/activemq.xml}" p:start="true"/>
+JMS Broker configuration -->
 
     <!-- translates events into JMS header-only format-->
     <bean class="org.fcrepo.jms.DefaultMessageFactory"/>
@@ -100,5 +99,5 @@
 
     <!-- Generates HTTP Sessions -->
     <bean class="org.fcrepo.http.commons.session.SessionFactory"/>
-    
+
 </beans>

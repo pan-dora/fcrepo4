@@ -15,7 +15,7 @@
 
   <bean name="modeshapeRepofactory"
     class="org.fcrepo.kernel.modeshape.spring.ModeShapeRepositoryFactoryBean"
-    p:repositoryConfiguration="${fcrepo.modeshape.configuration:/config/testing/repository.json}"/> 
+    p:repositoryConfiguration="${fcrepoTestModeshapeConfiguration}"/>
 
   <context:component-scan base-package="org.fcrepo"/>
 

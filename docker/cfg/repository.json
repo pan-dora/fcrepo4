@@ -9,17 +9,13 @@
     },
     "storage" : {
         "persistence": {
-            "type" : "db",
-            "connectionUrl": "jdbc:mysql://${fcrepoMysqlHost}:${fcrepoMysqlPort}/fcrepo?createDatabaseIfNotExist=true",
-            "driver" : "com.mysql.jdbc.Driver",
-            "username" : "${fcrepoMysqlUsername}",
-            "password" : "${fcrepoMysqlPassword}"
+            "type": "file",
+            "path" : "target/objects"
         },
         "binaryStorage" : {
-            "type" : "s3",
-            "username" : "${awsAccessKeyId}",
-            "password" : "${awsSecretKey}",
-            "bucketName" : "${awsBucket}"
+            "type" : "file",
+            "directory" : "target/binaries",
+            "minimumBinarySizeInBytes" : 4096
         }
     },
     "security" : {

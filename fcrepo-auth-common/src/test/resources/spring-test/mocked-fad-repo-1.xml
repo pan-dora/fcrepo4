@@ -13,7 +13,7 @@
 
     <bean name="modeshapeRepofactory" class="org.fcrepo.kernel.modeshape.spring.ModeShapeRepositoryFactoryBean"
           depends-on="authenticationProvider"
-          p:repositoryConfiguration="${fcrepo.modeshape.configuration:repository.json}"/>
+          p:repositoryConfiguration="${fcrepoTestModeshapeConfiguration}"/>
 
     <bean name="fad" class="org.mockito.Mockito" factory-method="mock"
           c:classToMock="org.fcrepo.auth.common.FedoraAuthorizationDelegate"/>

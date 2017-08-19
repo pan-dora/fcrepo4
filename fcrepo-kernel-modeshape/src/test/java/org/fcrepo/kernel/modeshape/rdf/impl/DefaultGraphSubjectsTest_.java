@@ -28,13 +28,13 @@ import org.mockito.Mock;
 import org.apache.jena.rdf.model.Resource;
 
 /**
- * <p>DefaultGraphSubjectsTest class.</p>
+ * <p>DefaultGraphSubjectsTest_ class.</p>
  *
  * // TODO Maybe write some tests?
  *
  * @author awoods
  */
-public class DefaultGraphSubjectsTest {
+public class DefaultGraphSubjectsTest_ {
 
     @Mock
     Node mockNode;

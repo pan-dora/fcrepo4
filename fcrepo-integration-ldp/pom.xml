@@ -46,6 +46,10 @@
                         <portName>fcrepo.dynamic.jms.port</portName>
                         <portName>fcrepo.dynamic.stomp.port</portName>
                     </portNames>
+                    <name/>
+                    <regex/>
+                    <source/>
+                    <value/>
                 </configuration>
                 <executions>
                   <execution>
@@ -151,6 +155,8 @@
                           <contextPath>/fcrepo</contextPath>
                         </contextHandler>
                     </contextHandlers>
+                      <stopKey/>
+                      <stopPort/>
                   </configuration>
                 </execution>
 
