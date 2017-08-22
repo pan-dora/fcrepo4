@@ -55,7 +55,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = {"/spring-test/mocked-fad-repo-2.xml"})
-public class ContainerRolesPrincipalProviderIT {
+public class ContainerRolesPrincipalProviderIT extends ModeShapePersistenceTestSuite {
 
     private static Logger logger =
             getLogger(ContainerRolesPrincipalProviderIT.class);

@@ -47,7 +47,7 @@ public class ModeShapeRepositoryFactoryBeanTest {
     private ModeShapeRepositoryFactoryBean testObj;
 
     private final Resource config = new ClassPathResource(
-            "config/testing/repository.json");
+            "config/testing/test-repository.json");
 
     @Mock
     private JcrRepository mockRepo;

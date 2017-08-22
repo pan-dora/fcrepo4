@@ -33,7 +33,7 @@ INSERT DATA {
   <> <info:fedora/fedora-system:def/model#mods.origin> "July 2015; , " .
   <> <info:fedora/fedora-system:def/model#pub_date_key> "2015-07-01T00:00:00Z" .
   <> <info:fedora/fedora-system:def/model#mods.publisher_place> "Atlanta, GA" .
-  <> <info:fedora/fedora-system:def/model#mods.country> "\n        gau\n    " .
+  <> <info:fedora/fedora-system:def/model#mods.country> "gau" .
   <> <info:fedora/fedora-system:def/model#mods.language> "eng" .
   <> <info:fedora/fedora-system:def/model#mods.physical_description> "2 unnumbered pages" .
   <> <info:fedora/fedora-system:def/model#mods.abstract> "added pid, collection relationship as rdf.isMemberOf" .

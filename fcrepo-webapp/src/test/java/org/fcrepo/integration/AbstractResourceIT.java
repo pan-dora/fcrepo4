@@ -17,24 +17,9 @@
  */
 package org.fcrepo.integration;
 
-import static java.lang.Integer.MAX_VALUE;
-import static java.lang.Integer.parseInt;
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.NO_CONTENT;
-import static javax.ws.rs.core.Response.Status.OK;
-import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
-import static javax.ws.rs.core.HttpHeaders.ACCEPT;
-
-import static org.fcrepo.http.commons.test.util.TestHelpers.parseTriples;
-import static org.junit.Assert.assertEquals;
-import static org.slf4j.LoggerFactory.getLogger;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.UUID;
-
-import org.apache.jena.query.Dataset;
+import com.gargoylesoftware.htmlunit.NicelyResynchronizingAjaxController;
+import com.gargoylesoftware.htmlunit.SilentCssErrorHandler;
+import com.gargoylesoftware.htmlunit.WebClient;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
@@ -52,104 +37,136 @@ import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.entity.BasicHttpEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.auth.BasicScheme;
-
 import org.apache.http.impl.client.BasicAuthCache;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-
 import org.apache.http.util.EntityUtils;
+import org.apache.jena.query.Dataset;
+import org.junit.After;
 import org.junit.Before;
 import org.slf4j.Logger;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.UUID;
+
+import static com.gargoylesoftware.htmlunit.BrowserVersion.FIREFOX_24;
+import static java.lang.Integer.MAX_VALUE;
+import static javax.ws.rs.core.HttpHeaders.ACCEPT;
+import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
+import static javax.ws.rs.core.Response.Status.*;
+import static org.fcrepo.http.commons.test.util.TestHelpers.parseTriples;
+import static org.junit.Assert.assertEquals;
+import static org.slf4j.LoggerFactory.getLogger;
+
 /**
  * Base class for ITs
+ *
  * @author awoods
  * @author escowles
-**/
-public abstract class AbstractResourceIT {
+ **/
+
+public abstract class AbstractResourceIT implements IntegrationTestCategory {
 
     protected Logger logger;
 
+    WebClient webClient;
+    WebClient javascriptlessWebClient;
+
     @Before
-    public void setLogger() {
+    public void setup() {
         logger = getLogger(this.getClass());
+        webClient = getDefaultWebClient();
+        javascriptlessWebClient = getDefaultWebClient();
+        javascriptlessWebClient.getOptions().setJavaScriptEnabled(false);
     }
 
-    protected static final int SERVER_PORT = parseInt(System.getProperty(
-            "fcrepo.dynamic.test.port", "8080"));
+    @After
+    public void cleanUp() {
+        webClient.closeAllWindows();
+        javascriptlessWebClient.closeAllWindows();
+    }
 
-    private static final String CONTEXT_PATH = System
-            .getProperty("fcrepo.test.context.path");
+    public WebClient getDefaultWebClient() {
+
+        final WebClient webClient = new WebClient(FIREFOX_24);
+        webClient.addRequestHeader(ACCEPT, "text/html");
+
+        webClient.waitForBackgroundJavaScript(1000);
+        webClient.waitForBackgroundJavaScriptStartingBefore(10000);
+        webClient.setAjaxController(new NicelyResynchronizingAjaxController());
+        //Suppress warning from IncorrectnessListener
+        webClient.setIncorrectnessListener(new FedoraHtmlResponsesIT.SuppressWarningIncorrectnessListener());
+
+        //Suppress css warning with the silent error handler.
+        webClient.setCssErrorHandler(new SilentCssErrorHandler());
+        return webClient;
+
+    }
+
+    public static int SERVER_PORT = Integer.parseInt("8080");
+
+    public static String CONTEXT_PATH = "/fcrepo/rest/";
 
     protected static final String HOSTNAME = "localhost";
 
     protected static final String PROTOCOL = "http";
 
-    protected static final String serverAddress = PROTOCOL + "://" + HOSTNAME + ":" +
-            SERVER_PORT + CONTEXT_PATH + "rest/";
+    protected final String serverAddress = PROTOCOL + "://" + HOSTNAME + ":" + SERVER_PORT + CONTEXT_PATH;
 
     protected static HttpClient client = createClient();
 
     protected static HttpClient createClient() {
-        return HttpClientBuilder.create().setMaxConnPerRoute(MAX_VALUE)
-                .setMaxConnTotal(MAX_VALUE).build();
+        return HttpClientBuilder.create().setMaxConnPerRoute(MAX_VALUE).setMaxConnTotal(MAX_VALUE).build();
     }
 
-    protected static HttpPost postObjMethod(final String pid) {
+    protected HttpPost postObjMethod(final String pid) {
         return new HttpPost(serverAddress + pid);
     }
 
-    protected static HttpPut putObjMethod(final String pid) {
+    protected HttpPut putObjMethod(final String pid) {
         return new HttpPut(serverAddress + pid);
     }
 
-    protected static HttpPost postObjMethod(final String pid, final String query) {
+    protected HttpPost postObjMethod(final String pid, final String query) {
         if (query.equals("")) {
             return new HttpPost(serverAddress + pid);
         }
         return new HttpPost(serverAddress + pid + "?" + query);
     }
 
-    protected static HttpPost postDSMethod(final String pid, final String ds,
-        final String content) throws UnsupportedEncodingException {
-        final HttpPost post =
-                new HttpPost(serverAddress + pid + "/" + ds +
-                        "/fcr:content");
+    protected HttpPost postDSMethod(final String pid, final String ds, final String content)
+            throws UnsupportedEncodingException {
+        final HttpPost post = new HttpPost(serverAddress + pid + "/" + ds + "/fcr:content");
         post.setEntity(new StringEntity(content));
         return post;
     }
 
-    protected static HttpPut putDSMethod(final String pid, final String ds,
-        final String content) throws UnsupportedEncodingException {
-        final HttpPut put =
-                new HttpPut(serverAddress + pid + "/" + ds +
-                        "/fcr:content");
+    protected HttpPut putDSMethod(final String pid, final String ds, final String content)
+            throws UnsupportedEncodingException {
+        final HttpPut put = new HttpPut(serverAddress + pid + "/" + ds + "/fcr:content");
 
         put.setEntity(new StringEntity(content));
         return put;
     }
 
-    protected HttpResponse execute(final HttpUriRequest method)
-        throws ClientProtocolException, IOException {
-        logger.debug("Executing: " + method.getMethod() + " to " +
-                         method.getURI());
+    protected HttpResponse execute(final HttpUriRequest method) throws ClientProtocolException, IOException {
+        logger.debug("Executing: " + method.getMethod() + " to " + method.getURI());
         return client.execute(method);
     }
 
     // Executes requests with preemptive basic authentication
-    protected HttpResponse executeWithBasicAuth(final HttpUriRequest request,
-                                                final String username,
-                                                final String password)
-        throws IOException {
+    protected HttpResponse executeWithBasicAuth(final HttpUriRequest request, final String username,
+                                                final String password) throws IOException {
         final HttpHost target = new HttpHost(HOSTNAME, SERVER_PORT, PROTOCOL);
         final CredentialsProvider credsProvider = new BasicCredentialsProvider();
-        credsProvider.setCredentials(
-                new AuthScope(target.getHostName(), target.getPort()),
+        credsProvider.setCredentials(new AuthScope(target.getHostName(), target.getPort()),
                 new UsernamePasswordCredentials(username, password));
-        try (final CloseableHttpClient httpclient = HttpClients.custom()
-                .setDefaultCredentialsProvider(credsProvider).build()) {
+        try (final CloseableHttpClient httpclient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider)
+                .build()) {
 
             final AuthCache authCache = new BasicAuthCache();
             final BasicScheme basicAuth = new BasicScheme();
@@ -163,9 +180,7 @@ public abstract class AbstractResourceIT {
         }
     }
 
-
-    protected int getStatus(final HttpUriRequest method)
-        throws ClientProtocolException, IOException {
+    protected int getStatus(final HttpUriRequest method) throws ClientProtocolException, IOException {
         final HttpResponse response = execute(method);
         final int result = response.getStatusLine().getStatusCode();
         if (!(result > 199) || !(result < 400)) {
@@ -174,8 +189,7 @@ public abstract class AbstractResourceIT {
         return result;
     }
 
-    protected String getContentType(final HttpUriRequest method)
-        throws ClientProtocolException, IOException {
+    protected String getContentType(final HttpUriRequest method) throws ClientProtocolException, IOException {
         final HttpResponse response = execute(method);
         final int result = response.getStatusLine().getStatusCode();
         assertEquals(OK.getStatusCode(), result);
@@ -187,18 +201,17 @@ public abstract class AbstractResourceIT {
         if (method.getFirstHeader(ACCEPT) == null) {
             method.addHeader(ACCEPT, "application/n-triples");
         } else {
-            logger.debug("Retrieving RDF in mimeType: {}", method
-                    .getFirstHeader(ACCEPT));
+            logger.debug("Retrieving RDF in mimeType: {}", method.getFirstHeader(ACCEPT));
         }
 
         final HttpResponse response = client.execute(method);
-        assertEquals(OK.getStatusCode(), response.getStatusLine()
-                                             .getStatusCode());
+        assertEquals(OK.getStatusCode(), response.getStatusLine().getStatusCode());
         final Dataset result = parseTriples(response.getEntity());
         logger.trace("Retrieved RDF: {}", result);
         return result;
 
     }
+
     protected Dataset getDataset(final HttpResponse response) throws IOException {
         assertEquals(OK.getStatusCode(), response.getStatusLine().getStatusCode());
         final Dataset result = parseTriples(response.getEntity());
@@ -221,45 +234,34 @@ public abstract class AbstractResourceIT {
     }
 
     protected HttpResponse createDatastream(final String pid, final String dsid, final String content)
-        throws IOException {
-        logger.trace(
-                "Attempting to create datastream for object: {} at datastream ID: {}",
-                pid, dsid);
-        final HttpResponse response =
-            client.execute(postDSMethod(pid, dsid, content));
+            throws IOException {
+        logger.trace("Attempting to create datastream for object: {} at datastream ID: {}", pid, dsid);
+        final HttpResponse response = client.execute(postDSMethod(pid, dsid, content));
         assertEquals(CREATED.getStatusCode(), response.getStatusLine().getStatusCode());
         return response;
     }
 
-    protected HttpResponse setProperty(final String pid,
-                                       final String propertyUri,
-                                       final String value) throws IOException {
+    protected HttpResponse setProperty(final String pid, final String propertyUri, final String value)
+            throws IOException {
         return setProperty(pid, null, propertyUri, value);
     }
 
-    protected HttpResponse setProperty(final String pid, final String txId,
-                                       final String propertyUri,
+    protected HttpResponse setProperty(final String pid, final String txId, final String propertyUri,
                                        final String value) throws IOException {
-        final HttpPatch postProp = new HttpPatch(serverAddress
-                + (txId != null ? txId + "/" : "") + pid);
+        final HttpPatch postProp = new HttpPatch(serverAddress + (txId != null ? txId + "/" : "") + pid);
         postProp.setHeader(CONTENT_TYPE, "application/sparql-update");
         final String updateString =
-                "INSERT { <"
-                        + serverAddress + pid
-                        + "> <" + propertyUri + "> \"" + value + "\" } WHERE { }";
+                "INSERT { <" + serverAddress + pid + "> <" + propertyUri + "> \"" + value + "\" } WHERE { }";
         postProp.setEntity(new StringEntity(updateString));
         final HttpResponse dcResp = execute(postProp);
-        assertEquals(dcResp.getStatusLine().toString(),
-                204, dcResp.getStatusLine().getStatusCode());
+        assertEquals(dcResp.getStatusLine().toString(), 204, dcResp.getStatusLine().getStatusCode());
         postProp.releaseConnection();
         return dcResp;
     }
 
-    protected static void addMixin(final String pid, final String mixinUrl) throws IOException {
-        final HttpPatch updateObjectGraphMethod =
-                new HttpPatch(serverAddress + pid);
-        updateObjectGraphMethod.addHeader(CONTENT_TYPE,
-                "application/sparql-update");
+    protected void addMixin(final String pid, final String mixinUrl) throws IOException {
+        final HttpPatch updateObjectGraphMethod = new HttpPatch(serverAddress + pid);
+        updateObjectGraphMethod.addHeader(CONTENT_TYPE, "application/sparql-update");
         final BasicHttpEntity e = new BasicHttpEntity();
 
         e.setContent(new ByteArrayInputStream(
@@ -267,8 +269,7 @@ public abstract class AbstractResourceIT {
                         .getBytes()));
         updateObjectGraphMethod.setEntity(e);
         final HttpResponse response = client.execute(updateObjectGraphMethod);
-        assertEquals(NO_CONTENT.getStatusCode(), response.getStatusLine()
-                .getStatusCode());
+        assertEquals(NO_CONTENT.getStatusCode(), response.getStatusLine().getStatusCode());
     }
 
     /**
@@ -298,6 +299,5 @@ public abstract class AbstractResourceIT {
     protected static String getRandomPropertyValue() {
         return UUID.randomUUID().toString();
     }
-
 
 }

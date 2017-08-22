@@ -58,7 +58,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/spring-test/mocked-fad-repo-3.xml" })
-public class DelegatedUserIT {
+public class DelegatedUserIT extends ModeShapePersistenceTestSuite {
 
     private static Logger logger =
             getLogger(DelegatedUserIT.class);

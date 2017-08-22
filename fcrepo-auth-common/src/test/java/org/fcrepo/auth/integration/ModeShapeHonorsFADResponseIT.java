@@ -36,7 +36,6 @@ import org.fcrepo.kernel.api.services.ContainerService;
 import org.fcrepo.kernel.modeshape.services.ContainerServiceImpl;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -58,7 +57,7 @@ import javax.servlet.http.HttpServletRequest;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = {"/spring-test/mocked-fad-repo.xml"})
-public class ModeShapeHonorsFADResponseIT {
+public class ModeShapeHonorsFADResponseIT extends ModeShapePersistenceTestSuite {
 
     private static Logger logger =
             getLogger(ModeShapeHonorsFADResponseIT.class);
@@ -70,16 +69,6 @@ public class ModeShapeHonorsFADResponseIT {
     FedoraAuthorizationDelegate fad;
 
     HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-
-    @Before
-    public void setUp() {
-        // final Map<String, String> config = new HashMap<String, String>();
-        // config.put(JcrRepositoryFactory.URL,
-        // "file:src/test/resources/repository.json");
-        // config.put(JcrRepositoryFactory.REPOSITORY_NAME,
-        // "fcrepo-secured-repo");
-        // repo = new JcrRepositoryFactory().getRepository(config);
-    }
 
     @Test
     public void testFADFactory() {

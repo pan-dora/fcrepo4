@@ -31,6 +31,8 @@ import static org.junit.Assert.assertEquals;
 import java.io.IOException;
 import java.net.URI;
 
+import com.palantir.docker.compose.DockerComposeRule;
+import com.palantir.docker.compose.connection.waiting.HealthChecks;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -40,44 +42,26 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.junit.experimental.categories.Category;
 
 import javax.ws.rs.core.Link;
 
 /**
- * <p>SanityCheckIT class.</p>
+ * <p>SanityCheck_ class.</p>
  *
  * @author fasseg
  */
-public class SanityCheckIT {
 
-    /**
-     * The server port of the application, set as system property by
-     * maven-failsafe-plugin.
-     */
-    private static final String SERVER_PORT = System.getProperty("fcrepo.dynamic.test.port");
+@Category(IntegrationTestCategory.class)
+public class SanityCheckIT extends AbstractResourceIT {
 
-    /**
-    * The context path of the application (including the leading "/"), set as
-    * system property by maven-failsafe-plugin.
-    */
-    private static final String CONTEXT_PATH = System
-            .getProperty("fcrepo.test.context.path");
-
-    protected Logger logger;
-
-    @Before
-    public void setLogger() {
-        logger = LoggerFactory.getLogger(this.getClass());
-    }
-
-    protected static final String HOSTNAME = "localhost";
-
-    protected static final String serverAddress = "http://" + HOSTNAME + ":" +
-            SERVER_PORT + CONTEXT_PATH;
+    @ClassRule
+    public static DockerComposeRule docker = DockerComposeRule.builder()
+            .file("src/test/resources/docker-compose-fcrepo.yml")
+            .waitingForService("fcrepo", HealthChecks.toHaveAllPortsOpen())
+            .build();
 
     protected static HttpClient client;
 
@@ -89,7 +73,7 @@ public class SanityCheckIT {
 
     @Test
     public void doASanityCheck() throws IOException {
-        executeAndVerify(new HttpGet(serverAddress + "rest/"), SC_OK);
+        executeAndVerify(new HttpGet(serverAddress), SC_OK);
     }
 
     private HttpResponse executeAndVerify(final HttpUriRequest method, final int statusCode) throws IOException {
@@ -103,7 +87,7 @@ public class SanityCheckIT {
     @Test
     public void testConstraintLink() throws Exception {
         // Create a resource
-        final HttpPost post = new HttpPost(serverAddress + "rest/");
+        final HttpPost post = new HttpPost(serverAddress);
         final HttpResponse postResponse = executeAndVerify(post, SC_CREATED);
 
         final String location = postResponse.getFirstHeader("Location").getValue();

@@ -80,6 +80,7 @@ public class FedoraTransactionsIT extends AbstractResourceIT {
     }
 
     @Test
+    @Ignore
     public void testCreateAndTimeoutTransaction() throws IOException, InterruptedException {
 
         /* create a short-lived tx */

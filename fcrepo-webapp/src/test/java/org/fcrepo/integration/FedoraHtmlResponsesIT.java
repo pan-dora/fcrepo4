@@ -19,8 +19,6 @@ package org.fcrepo.integration;
 
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
-import static javax.ws.rs.core.HttpHeaders.ACCEPT;
-import static com.gargoylesoftware.htmlunit.BrowserVersion.FIREFOX_24;
 import static com.google.common.collect.Lists.transform;
 import static java.util.UUID.randomUUID;
 import static org.fcrepo.kernel.api.RdfLexicon.FEDORA_CONFIG_NAMESPACE;
@@ -35,19 +33,17 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.List;
 
+import com.palantir.docker.compose.DockerComposeRule;
+import com.palantir.docker.compose.connection.waiting.HealthChecks;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.entity.BasicHttpEntity;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.IncorrectnessListener;
-import com.gargoylesoftware.htmlunit.NicelyResynchronizingAjaxController;
 import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.SilentCssErrorHandler;
-import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.DomAttr;
 import com.gargoylesoftware.htmlunit.html.DomText;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
@@ -58,30 +54,22 @@ import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlSelect;
 import com.gargoylesoftware.htmlunit.html.HtmlTextArea;
+import org.junit.experimental.categories.Category;
 
 /**
- * <p>FedoraHtmlResponsesIT class.</p>
+ * <p>FedoraHtmlResponses_ class.</p>
  *
  * @author cbeer
  */
+
+@Category(IntegrationTestCategory.class)
 public class FedoraHtmlResponsesIT extends AbstractResourceIT {
 
-    private WebClient webClient;
-    private WebClient javascriptlessWebClient;
-
-    @Before
-    public void setUp() {
-        webClient = getDefaultWebClient();
-
-        javascriptlessWebClient = getDefaultWebClient();
-        javascriptlessWebClient.getOptions().setJavaScriptEnabled(false);
-    }
-
-    @After
-    public void cleanUp() {
-        webClient.closeAllWindows();
-        javascriptlessWebClient.closeAllWindows();
-    }
+    @ClassRule
+    public static DockerComposeRule docker = DockerComposeRule.builder()
+            .file("src/test/resources/docker-compose-fcrepo.yml")
+            .waitingForService("fcrepo", HealthChecks.toHaveAllPortsOpen())
+            .build();
 
     @Test
     public void testDescribeHtml() throws IOException {
@@ -90,11 +78,11 @@ public class FedoraHtmlResponsesIT extends AbstractResourceIT {
 
         checkForHeaderBranding(page);
         final String namespaceLabel = page
-            .getFirstByXPath("//span[@title='" + REPOSITORY_NAMESPACE + "']/text()")
-            .toString();
+                .getFirstByXPath("//span[@title='" + REPOSITORY_NAMESPACE + "']/text()")
+                .toString();
 
         assertEquals("Expected to find namespace URIs displayed as their prefixes", "fedora:",
-                        namespaceLabel);
+                namespaceLabel);
     }
 
     @Test
@@ -228,12 +216,12 @@ public class FedoraHtmlResponsesIT extends AbstractResourceIT {
 
         final HtmlPage objectPage = javascriptlessWebClient.getPage(serverAddress + pid);
         assertEquals("Auto versioning should be set.", "auto-version",
-                     objectPage.getFirstByXPath(
-                             "//span[@property='" + FEDORA_CONFIG_NAMESPACE + "versioningPolicy']/text()")
-                             .toString());
+                objectPage.getFirstByXPath(
+                        "//span[@property='" + FEDORA_CONFIG_NAMESPACE + "versioningPolicy']/text()")
+                        .toString());
         assertEquals("Title should be set.", "Object Title",
-                     objectPage.getFirstByXPath("//span[@property='http://purl.org/dc/elements/1.1/title']/text()")
-                             .toString());
+                objectPage.getFirstByXPath("//span[@property='http://purl.org/dc/elements/1.1/title']/text()")
+                        .toString());
 
         final String updateSparql2 = "PREFIX dc: <http://purl.org/dc/elements/1.1/>\n" +
                 "\n" +
@@ -245,31 +233,31 @@ public class FedoraHtmlResponsesIT extends AbstractResourceIT {
         final HtmlPage versions =
                 javascriptlessWebClient.getPage(serverAddress + pid + "/fcr:versions");
         final List<DomAttr> versionLinks =
-            castList(versions.getByXPath("//a[@class='version_link']/@href"));
+                castList(versions.getByXPath("//a[@class='version_link']/@href"));
         assertEquals("There should be two revisions.", 2, versionLinks.size());
 
         // get the labels
         // will look like "Version from 2013-00-0T00:00:00.000Z"
         // and will sort chronologically based on a String comparison
         final List<DomText> labels =
-            castList(versions
-                    .getByXPath("//a[@class='version_link']/text()"));
+                castList(versions
+                        .getByXPath("//a[@class='version_link']/text()"));
         final boolean chronological = labels.get(0).asText().compareTo(labels.get(1).toString()) < 0;
         logger.debug("Versions {} in chronological order: {}, {}",
-                     chronological ? "are" : "are not", labels.get(0).asText(), labels.get(1).asText());
+                chronological ? "are" : "are not", labels.get(0).asText(), labels.get(1).asText());
 
         final HtmlPage firstRevision =
                 javascriptlessWebClient.getPage(versionLinks.get(chronological ? 0 : 1)
-                    .getNodeValue());
+                        .getNodeValue());
         final List<DomText> v1Titles =
-            castList(firstRevision
-                    .getByXPath("//span[@property='http://purl.org/dc/elements/1.1/title']/text()"));
+                castList(firstRevision
+                        .getByXPath("//span[@property='http://purl.org/dc/elements/1.1/title']/text()"));
         final HtmlPage secondRevision =
                 javascriptlessWebClient.getPage(versionLinks.get(chronological ? 1 : 0)
-                    .getNodeValue());
+                        .getNodeValue());
         final List<DomText> v2Titles =
-            castList(secondRevision
-                    .getByXPath("//span[@property='http://purl.org/dc/elements/1.1/title']/text()"));
+                castList(secondRevision
+                        .getByXPath("//span[@property='http://purl.org/dc/elements/1.1/title']/text()"));
 
         assertEquals("Version one should have one title.", 1, v1Titles.size());
         assertEquals("Version two should have one title.", 1, v2Titles.size());
@@ -278,7 +266,7 @@ public class FedoraHtmlResponsesIT extends AbstractResourceIT {
         assertEquals("Second version should be preserved.", "Updated Title", v2Titles.get(0).getWholeText());
     }
 
-    private static void postSparqlUpdateUsingHttpClient(final String sparql, final String pid) throws IOException {
+    private void postSparqlUpdateUsingHttpClient(final String sparql, final String pid) throws IOException {
         final HttpPatch method = new HttpPatch(serverAddress + pid);
         method.addHeader(CONTENT_TYPE, "application/sparql-update");
         final BasicHttpEntity entity = new BasicHttpEntity();
@@ -347,34 +335,16 @@ public class FedoraHtmlResponsesIT extends AbstractResourceIT {
         return pid;
     }
 
-
-    private WebClient getDefaultWebClient() {
-
-        final WebClient webClient = new WebClient(FIREFOX_24);
-        webClient.addRequestHeader(ACCEPT, "text/html");
-
-        webClient.waitForBackgroundJavaScript(1000);
-        webClient.waitForBackgroundJavaScriptStartingBefore(10000);
-        webClient.setAjaxController(new NicelyResynchronizingAjaxController());
-        //Suppress warning from IncorrectnessListener
-        webClient.setIncorrectnessListener(new SuppressWarningIncorrectnessListener());
-
-        //Suppress css warning with the silent error handler.
-        webClient.setCssErrorHandler(new SilentCssErrorHandler());
-        return webClient;
-
-    }
-
     @SuppressWarnings("unchecked")
     private static <T> List<T> castList(final List<?> l) {
         return transform(l, x -> (T) x);
     }
 
-    private static class SuppressWarningIncorrectnessListener
+    static class SuppressWarningIncorrectnessListener
             implements IncorrectnessListener {
         @Override
         public void notify(final String arg0, final Object arg1) {
 
         }
-      }
+    }
 }
