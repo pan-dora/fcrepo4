@@ -26,11 +26,12 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+import org.modeshape.common.util.FileUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -41,9 +42,17 @@ import java.util.UUID;
  *
  * @author gregjan
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration("/spring-test/test-container.xml")
+
+@RunWith(Suite.class)
+@Suite.SuiteClasses({FedoraResponseCodesIT.class})
 public abstract class AbstractResourceIT {
+
+    @BeforeClass
+    public static void setUp() {
+        FileUtil.delete("target/fedora_repository/store/modeshape.repository");
+        System.out.println("setting up");
+
+    }
 
     protected Logger logger;
 

@@ -43,7 +43,7 @@ import static org.junit.Assert.assertTrue;
  * @since 10/6/14
  */
 
-public class LdpTestSuiteIT {
+public class LdpTestSuiteIT_ {
 
     public static final String LDP_NAMESPACE = "http://www.w3.org/ns/ldp#";
 

@@ -33,7 +33,7 @@
     <bean name="authenticationProvider" class="org.fcrepo.auth.common.ServletContainerAuthenticationProvider"
           p:fad-ref="fad" p:principalProviders-ref="principalProviderSet" />
 
-    <bean class="org.modeshape.jcr.ModeShapeEngine" init-method="start"/>
+    <bean class="org.modeshape.jcr.ModeShapeEngine" init-method="start" destroy-method="shutdown"/>
 
     <bean id="connectionManager" class="org.apache.http.impl.conn.PoolingHttpClientConnectionManager"/>
 

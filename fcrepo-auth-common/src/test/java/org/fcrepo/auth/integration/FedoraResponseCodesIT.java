@@ -26,13 +26,18 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.util.EntityUtils;
 import org.junit.Test;
-
+import org.junit.runner.RunWith;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * <p>FedoraResponseCodesIT class.</p>
  *
  * @author gregjan
  */
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration("/spring-test/test-container.xml")
 public class FedoraResponseCodesIT extends AbstractResourceIT {
 
     @Test

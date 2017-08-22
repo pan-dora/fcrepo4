@@ -31,6 +31,9 @@ configure(allprojects) { project ->
     repositories {
         jcenter()
         mavenCentral()
+        maven {
+            url 'https://dl.bintray.com/palantir/releases'
+        }
     }
 
     ext.activemqVersion = "5.14.1"
@@ -103,16 +106,13 @@ configure(allprojects) { project ->
         systemProperty("java.awt.headless", "true")
         systemProperty("testGroups", project.properties.get("testGroups"))
         scanForTestClasses = false
-        include(["**/*Tests.class", "**/*Test.class"])
+        include(["**/*Tests.class", "**/*Test.class", "**/*IT.class"])
         exclude(["**/Abstract*.class", '**/*$*'])
         reports.junitXml.destination = file("$buildDir/test-results")
+        useJUnit {
+            excludeCategories 'org.fcrepo.integration.IntegrationTestCategory'
+        }
     }
-
-    task packageTests(type: Jar) {
-        from sourceSets.test.output
-        classifier = 'tests'
-    }
-    artifacts.archives packageTests
 
     afterEvaluate {
         gradle.projectsEvaluated {
@@ -134,6 +134,9 @@ configure(allprojects) { project ->
 
 configure(subprojects) { subproject ->
     apply plugin: 'java'
+//    apply plugin: 'checkstyle'
+//    apply plugin: 'com.github.hierynomus.license'
+    apply plugin: 'jacoco'
 
     task packageSources(type: Jar) {
         classifier = 'sources'
@@ -141,6 +144,12 @@ configure(subprojects) { subproject ->
     }
 
     artifacts.archives packageSources
+
+    task packageTests(type: Jar) {
+        from sourceSets.test.output
+        classifier = 'tests'
+    }
+    artifacts.archives packageTests
 
     dependencyManagement {
         imports {
@@ -162,6 +171,28 @@ configure(subprojects) { subproject ->
         it.exclude group: 'org.slf4j', module: 'slf4j-nop'
         it.exclude group: 'org.slf4j', module: 'slf4j-simple'
         it.exclude group: 'org.apache.cxf'
+    }
+
+    def exportedProjects = [
+            ":fcrepo-auth-common",
+            ":fcrepo-event-serialization",
+            ":fcrepo-http-api",
+            ":fcrepo-http-commons",
+            ":fcrepo-jms",
+            ":fcrepo-kernel-api",
+            ":fcrepo-kernel-modeshape",
+            ":fcrepo-metrics"
+    ]
+
+    task alljavadoc(type: Javadoc) {
+        //noinspection GroovyAssignabilityCheck
+        source exportedProjects.collect { project(it).sourceSets.main.allJava }
+        classpath = files(exportedProjects.collect { project(it).sourceSets.main.compileClasspath })
+        destinationDir = file("${buildDir}/docs/javadoc")
+    }
+
+    jacoco {
+        toolVersion = "0.7.9"
     }
 }
 
@@ -529,6 +560,15 @@ project("fcrepo-metrics") {
 project("fcrepo-webapp") {
     apply plugin: 'war'
 
+    task integrationTest(type: Test) {
+        integrationTest.dependsOn dockerPush
+        doLast {
+            useJUnit {
+                includeCategories 'org.fcrepo.integration.IntegrationTestCategory'
+            }
+        }
+    }
+
     description = 'Fedora Repository Deployable Web Application'
     dependencies {
         compile("ch.qos.logback:logback-classic:${logbackVersion}")
@@ -589,6 +629,7 @@ project("fcrepo-webapp") {
         testCompile("org.springframework:spring-test:${springVersion}") {
             exclude(module: 'commons-logging')
         }
+        testCompile "com.palantir.docker.compose:docker-compose-rule-junit4:0.32.0"
         testCompile("org.apache.httpcomponents:httpmime:${httpmimeVersion}") {
             exclude(module: 'commons-logging')
         }
@@ -599,13 +640,12 @@ project("fcrepo-webapp") {
 }
 
 docker {
-    name "${vendor}/fcrepo"
-    tags "${version}"
-    dockerfile file('docker/Dockerfile')
-    files "${projectDir}/docker/cfg"
-    copySpec.from("${projectDir}/fcrepo-webapp/build/libs").into("dist")
-    pull true
-    noCache true
+        name "${vendor}/fcrepo"
+        tags "${version}"
+        dockerfile file('docker/Dockerfile')
+        files "${projectDir}/docker/cfg"
+        copySpec.from("${projectDir}/fcrepo-webapp/build/libs").into("dist")
+        pull true
+        noCache true
 }
-
 
