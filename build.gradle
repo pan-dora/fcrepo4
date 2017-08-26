@@ -34,6 +34,9 @@ configure(allprojects) { project ->
         maven {
             url 'https://dl.bintray.com/palantir/releases'
         }
+        flatDir {
+            dirs "$rootProject.projectDir/lib"
+        }
     }
 
     ext.activemqVersion = "5.14.1"
@@ -42,6 +45,7 @@ configure(allprojects) { project ->
     ext.commonscodecVersion = "1.10"
     ext.commonsioVersion = "2.5"
     ext.commonslangVersion = "3.5"
+    ext.dockerComposeRuleJunitVersion = "0.32.0"
     ext.enforcerPluginVersion = "1.4"
     ext.enforcevictimsRuleVersion = "1.3.4"
     ext.fcrepoBomVersion = "4.7.4"
@@ -146,8 +150,8 @@ configure(subprojects) { subproject ->
     artifacts.archives packageSources
 
     task packageTests(type: Jar) {
-        from sourceSets.test.output
         classifier = 'tests'
+        from sourceSets.test.output
     }
     artifacts.archives packageTests
 
@@ -389,12 +393,34 @@ project("fcrepo-http-commons") {
     }
 }
 
-project("fcrepo-parent:fcrepo-integration-ldp") {
+project("fcrepo-integration-ldp") {
     description = 'Fedora Repository LDP integration tests Module'
+
+    task integrationTest(type: Test) {
+        doLast {
+            useJUnit {
+                includeCategories 'org.fcrepo.integration.ldp.IntegrationTestCategory'
+            }
+        }
+    }
+
     dependencies {
         testCompile("junit:junit:${junitVersion}")
-        testCompile("org.w3:ldp-testsuite:0.1.1")
+        testCompile("org.w3:ldp-testsuite:0.2.0-SNAPSHOT")
         testCompile project(":fcrepo-http-commons").sourceSets.test.output
+        testCompile "com.palantir.docker.compose:docker-compose-rule-junit4:${dockerComposeRuleJunitVersion}"
+        testCompile("org.apache.jena:jena-arq:3.1.1")
+        testCompile("org.testng:testng:6.8.8")
+        testCompile("org.rendersnake:rendersnake:1.9.0")
+        testCompile("com.jayway.restassured:rest-assured:2.8.0")
+        testCompile("org.jboss.resteasy:resteasy-jaxrs:3.0.8.Final")
+        testCompile("org.openrdf.sesame:sesame-rio-api:4.1.2")
+        testCompile("org.apache.marmotta:marmotta-commons:3.3.0")
+        testCompile("org.apache.marmotta:marmotta-ldp:3.3.0")
+
+
+        testCompile("ch.qos.logback:logback-classic:${logbackVersion}")
+
     }
 }
 
@@ -561,7 +587,6 @@ project("fcrepo-webapp") {
     apply plugin: 'war'
 
     task integrationTest(type: Test) {
-        integrationTest.dependsOn dockerPush
         doLast {
             useJUnit {
                 includeCategories 'org.fcrepo.integration.IntegrationTestCategory'
@@ -629,7 +654,7 @@ project("fcrepo-webapp") {
         testCompile("org.springframework:spring-test:${springVersion}") {
             exclude(module: 'commons-logging')
         }
-        testCompile "com.palantir.docker.compose:docker-compose-rule-junit4:0.32.0"
+        testCompile "com.palantir.docker.compose:docker-compose-rule-junit4:${dockerComposeRuleJunitVersion}"
         testCompile("org.apache.httpcomponents:httpmime:${httpmimeVersion}") {
             exclude(module: 'commons-logging')
         }

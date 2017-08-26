@@ -33,7 +33,11 @@ import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.entity.BasicHttpEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.auth.BasicScheme;
-import org.apache.http.impl.client.*;
+import org.apache.http.impl.client.BasicAuthCache;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.apache.jena.query.Dataset;
 import org.junit.After;
@@ -292,4 +296,8 @@ public abstract class AbstractResourceIT implements IntegrationTestCategory {
         return UUID.randomUUID().toString();
     }
 
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 002d0182c378308b11dceb508674790182a16ebf

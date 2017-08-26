@@ -38,7 +38,9 @@ import com.palantir.docker.compose.connection.waiting.HealthChecks;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.entity.BasicHttpEntity;
-import org.junit.*;
+import org.junit.ClassRule;
+import org.junit.Ignore;
+import org.junit.Test;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.IncorrectnessListener;
 import com.gargoylesoftware.htmlunit.Page;
@@ -345,4 +347,8 @@ public class FedoraHtmlResponsesIT extends AbstractResourceIT {
 
         }
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 002d0182c378308b11dceb508674790182a16ebf
