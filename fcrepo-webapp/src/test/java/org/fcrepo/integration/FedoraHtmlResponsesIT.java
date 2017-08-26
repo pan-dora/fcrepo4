@@ -347,8 +347,5 @@ public class FedoraHtmlResponsesIT extends AbstractResourceIT {
 
         }
     }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> 002d0182c378308b11dceb508674790182a16ebf
+

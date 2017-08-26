@@ -295,9 +295,5 @@ public abstract class AbstractResourceIT implements IntegrationTestCategory {
     protected static String getRandomPropertyValue() {
         return UUID.randomUUID().toString();
     }
+}
 
-<<<<<<< HEAD
-}
-=======
-}
->>>>>>> 002d0182c378308b11dceb508674790182a16ebf

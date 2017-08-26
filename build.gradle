@@ -1,10 +1,12 @@
 buildscript {
     repositories {
+        mavenCentral()
         maven { url "https://repo.spring.io/plugins-release" }
     }
     dependencies {
         classpath("io.spring.gradle:dependency-management-plugin:1.0.0.RELEASE")
         classpath("io.spring.gradle:propdeps-plugin:0.0.8")
+        classpath 'com.bmuschko:gradle-nexus-plugin:2.3.1'
     }
 }
 
@@ -16,8 +18,22 @@ plugins {
 }
 
 ext {
+    name = 'Fedora Commons Repository'
+    description = 'Fedora Commons Repository'
+    url = 'https://github.com/fcrepo4/fcrepo4'
+    inceptionYear = '1997'
     linkHomepage = 'http://fedorarepository.org/'
     vendor = 'pandorasystems'
+}
+
+docker {
+    name "${vendor}/fcrepo"
+    tags "${version}"
+    dockerfile file('docker/Dockerfile')
+    files "${projectDir}/docker/cfg"
+    copySpec.from("${projectDir}/fcrepo-webapp/build/libs").into("dist")
+    pull true
+    noCache true
 }
 
 configure(allprojects) { project ->
@@ -112,10 +128,7 @@ configure(allprojects) { project ->
         scanForTestClasses = false
         include(["**/*Tests.class", "**/*Test.class", "**/*IT.class"])
         exclude(["**/Abstract*.class", '**/*$*'])
-        reports.junitXml.destination = file("$buildDir/test-results")
-        useJUnit {
-            excludeCategories 'org.fcrepo.integration.IntegrationTestCategory'
-        }
+        reports.junitXml.destination(file("$buildDir/test-results"))
     }
 
     afterEvaluate {
@@ -137,7 +150,9 @@ configure(allprojects) { project ->
 }
 
 configure(subprojects) { subproject ->
-    apply plugin: 'java'
+    apply plugin: 'maven-publish'
+    apply plugin: 'signing'
+    apply plugin: 'com.bmuschko.nexus'
 //    apply plugin: 'checkstyle'
 //    apply plugin: 'com.github.hierynomus.license'
     apply plugin: 'jacoco'
@@ -154,16 +169,6 @@ configure(subprojects) { subproject ->
         from sourceSets.test.output
     }
     artifacts.archives packageTests
-
-    dependencyManagement {
-        imports {
-            mavenBom "org.fcrepo:fcrepo-jcr-bom:${fcrepoBomVersion}"
-        }
-        resolutionStrategy {
-            cacheChangingModulesFor 0, 'seconds'
-        }
-        applyMavenExclusions = false
-    }
 
     configurations.all {
         it.exclude group: 'commons-logging'
@@ -188,15 +193,78 @@ configure(subprojects) { subproject ->
             ":fcrepo-metrics"
     ]
 
-    task alljavadoc(type: Javadoc) {
+    def docOutputDir = "${rootProject.buildDir}/docs/javadoc"
+
+    configurations {
+        javase
+    }
+
+    dependencies {
+        javase files('rt.jar')
+    }
+
+    task allJavadoc(type: Javadoc) {
         //noinspection GroovyAssignabilityCheck
         source exportedProjects.collect { project(it).sourceSets.main.allJava }
         classpath = files(exportedProjects.collect { project(it).sourceSets.main.compileClasspath })
-        destinationDir = file("${buildDir}/docs/javadoc")
+        destinationDir = file(docOutputDir)
     }
+
+    allJavadoc.dependsOn configurations.javase
 
     jacoco {
         toolVersion = "0.7.9"
+    }
+
+    publishing {
+        publications {
+            maven(MavenPublication) {
+                from components.java
+            }
+        }
+        repositories {
+            maven {
+                url "$buildDir/maven"
+            }
+        }
+    }
+
+    modifyPom {
+        //noinspection GroovyAssignabilityCheck
+        project {
+            organization {
+                name vendor
+                url homepage
+            }
+
+            developers {
+                developer {
+                    id 'christopher-johnson'
+                    name 'Christopher Johnson'
+                    email 'chjohnson @ (domain of organization url)'
+                    organization 'Pan-dora Ecosystem'
+                    organizationUrl 'https://pan-dora.github.io/'
+                    roles {
+                        role 'developer'
+                    }
+                    timezone '+1'
+                }
+            }
+
+            scm {
+                connection 'scm:git:git://github.com/fcrepo4/fcrepo4.git'
+                developerConnection 'scm:git:git@ggithub.com/fcrepo4/fcrepo4.git'
+                url 'https://github.com/fcrepo4/fcrepo4/'
+                tag 'HEAD'
+            }
+
+            licenses {
+                license {
+                    name 'Apache License, Version 2.0'
+                    url 'http://www.apache.org/licenses/LICENSE-2.0'
+                }
+            }
+        }
     }
 }
 
@@ -247,6 +315,14 @@ project("fcrepo-auth-common") {
         }
         testCompile("javax.servlet:javax.servlet-api:${javaxServletapiVersion}")
         compileOnly("javax:javaee-api:${javaeeApiVersion}")
+    }
+
+    task integrationTest(type: Test) {
+        doLast {
+            useJUnit {
+                includeCategories 'org.fcrepo.auth.integration.IntegrationTestCategory'
+            }
+        }
     }
 }
 
@@ -452,6 +528,21 @@ project("fcrepo-integration-rdf") {
             exclude(module: 'hamcrest-core')
         }
         testCompile("ch.qos.logback:logback-classic:${logbackVersion}")
+    }
+}
+
+project("fcrepo-jcr-bom") {
+    dependencies {
+        compile("org.modeshape:modeshape-jcr:${modeshapeVersion}") {
+            exclude(module: 'commons-codec')
+            exclude(module: 'snappy-java')
+            exclude(module: 'servlet-api')
+            exclude(module: 'xercesImpl')
+        }
+        compile "commons-codec:commons-codec:${commonscodecVersion}",
+                "org.modeshape:modeshape-common:${modeshapeVersion}",
+                "org.jboss.jbossts:jbossjta:${jbossjtaVersion}",
+                "org.xerial.snappy:snappy-java:${snappyjavaVersion}"
     }
 }
 
@@ -662,15 +753,5 @@ project("fcrepo-webapp") {
         testCompile("org.reflections:reflections:0.9.10")
         providedCompile("javax:javaee-api:${javaeeApiVersion}")
     }
-}
-
-docker {
-        name "${vendor}/fcrepo"
-        tags "${version}"
-        dockerfile file('docker/Dockerfile')
-        files "${projectDir}/docker/cfg"
-        copySpec.from("${projectDir}/fcrepo-webapp/build/libs").into("dist")
-        pull true
-        noCache true
 }
 

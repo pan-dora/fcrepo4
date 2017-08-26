@@ -20,8 +20,7 @@ package org.fcrepo.metrics;
 import javax.servlet.annotation.WebListener;
 
 import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.health.HealthCheckRegistry;
-import com.codahale.metrics.servlets.AdminServletContextListener;
+import com.codahale.metrics.servlets.MetricsServlet;
 
 /**
  * A ServletContextListener to set the ServletContext attributes that the
@@ -32,7 +31,7 @@ import com.codahale.metrics.servlets.AdminServletContextListener;
  *      href="http://metrics.codahale.com/manual/servlets/">http://metrics.codahale.com/manual/servlets/</a>
  */
 @WebListener
-public class MetricsContextListener extends AdminServletContextListener {
+public class MetricsContextListener extends MetricsServlet.ContextListener {
 
     /**
      * Get the metrics registry for fcrepo
@@ -43,13 +42,5 @@ public class MetricsContextListener extends AdminServletContextListener {
         return RegistryService.getInstance().getMetrics();
     }
 
-    /**
-     * Provide a health-check registry
-     * TODO actually populate the health-check registry with checks
-     * @return a new health check registry
-     */
-    @Override
-    protected HealthCheckRegistry getHealthCheckRegistry() {
-        return new HealthCheckRegistry();
-    }
+
 }
