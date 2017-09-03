@@ -1,7 +1,4 @@
 rootProject.name = 'fcrepo'
-include ':fcrepo4-bom'
-include ':fcrepo-jcr-bom'
-include ':fcrepo-boms'
 include ':fcrepo-kernel-api'
 include ':fcrepo-kernel-modeshape'
 include ':fcrepo-webapp'
@@ -12,21 +9,8 @@ include ':fcrepo-http-api'
 include ':fcrepo-metrics'
 include ':fcrepo-auth-common'
 include ':fcrepo-configs'
-include ':fcrepo-integration-ldp'
-include ':fcrepo-integration-rdf'
+include ':fcrepo-IT'
+include ':fcrepo-IT:fcrepo-IT-ldp'
+include ':fcrepo-IT:fcrepo-IT-rdf'
+include ':fcrepo-IT:fcrepo-IT-auth'
 
-project(':fcrepo4-bom').projectDir = "$rootDir/fcrepo-boms/fcrepo4-bom" as File
-project(':fcrepo-jcr-bom').projectDir = "$rootDir/fcrepo-boms/fcrepo-jcr-bom" as File
-project(':fcrepo-boms').projectDir = "$rootDir/fcrepo-boms" as File
-project(':fcrepo-kernel-api').projectDir = "$rootDir/fcrepo-kernel-api" as File
-project(':fcrepo-kernel-modeshape').projectDir = "$rootDir/fcrepo-kernel-modeshape" as File
-project(':fcrepo-webapp').projectDir = "$rootDir/fcrepo-webapp" as File
-project(':fcrepo-event-serialization').projectDir = "$rootDir/fcrepo-event-serialization" as File
-project(':fcrepo-jms').projectDir = "$rootDir/fcrepo-jms" as File
-project(':fcrepo-http-commons').projectDir = "$rootDir/fcrepo-http-commons" as File
-project(':fcrepo-http-api').projectDir = "$rootDir/fcrepo-http-api" as File
-project(':fcrepo-metrics').projectDir = "$rootDir/fcrepo-metrics" as File
-project(':fcrepo-auth-common').projectDir = "$rootDir/fcrepo-auth-common" as File
-project(':fcrepo-configs').projectDir = "$rootDir/fcrepo-configs" as File
-project(':fcrepo-integration-ldp').projectDir = "$rootDir/fcrepo-integration-ldp" as File
-project(':fcrepo-integration-rdf').projectDir = "$rootDir/fcrepo-integration-rdf" as File

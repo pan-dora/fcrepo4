@@ -1,0 +1,13 @@
+FROM tomcat:9-jre8-alpine
+
+WORKDIR /etc/fcrepo
+COPY dist/fcrepo-config.xml dist/logback.xml dist/repository.json /etc/fcrepo/
+COPY dist/server.xml dist/ca* ${CATALINA_HOME}/conf/
+
+# Fcrepo webapp
+COPY dist/fcrepo-webapp-${version}.war ${CATALINA_HOME}/webapps/fcrepo.war
+RUN echo "org.apache.catalina.webresources.Cache.level = SEVERE" \
+    >> ${CATALINA_HOME}/conf/logging.properties
+
+
+

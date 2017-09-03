@@ -59,7 +59,7 @@ public class SanityCheckIT extends AbstractResourceIT {
 
     @ClassRule
     public static DockerComposeRule docker = DockerComposeRule.builder()
-            .file("src/test/resources/docker-compose-fcrepo.yml")
+            .file("src/test/resources/main.docker-compose-fcrepo.yml")
             .waitingForService("fcrepo", HealthChecks.toHaveAllPortsOpen())
             .build();
 
