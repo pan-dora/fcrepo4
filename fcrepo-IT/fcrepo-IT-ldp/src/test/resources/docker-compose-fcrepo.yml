@@ -1,0 +1,26 @@
+version: "2.1"
+
+services:
+  activemq:
+    image: pandorasystems/activemq
+    ports:
+      - "61616:61616"
+      - "8181:8181"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://activemq:8181/activemqweb"]
+      interval: 15s
+      timeout: 20s
+      retries: 10
+
+  fcrepo:
+    image: pandorasystems/fcrepo
+    environment:
+      CATALINA_OPTS: -Dfcrepo.home=/mnt/fcrepo-data -Dfcrepo.spring.configuration=file:/etc/fcrepo/fcrepo-config.xml -Xss8M -Dfcrepo.modeshape.configuration=file:/etc/fcrepo/auth-repository.json
+    ports:
+      - "8443:8443"
+      - "8080:8080"
+    depends_on:
+      activemq:
+        condition: service_healthy
+    volumes:
+      - './fcrepo-configs:/etc/fcrepo'
