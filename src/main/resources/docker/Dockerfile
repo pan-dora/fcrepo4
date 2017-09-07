@@ -11,6 +11,7 @@ COPY repository/org/fcrepo/fcrepo-http-api/${version}/fcrepo-http-api-${version}
 COPY repository/org/fcrepo/fcrepo-event-serialization/${version}/fcrepo-event-serialization-${version}.jar ${KARAF_DEPLOY}
 COPY repository/org/fcrepo/fcrepo-jms/${version}/fcrepo-jms-${version}.jar ${KARAF_DEPLOY}
 COPY repository/org/fcrepo/modeshape*.jar ${KARAF_DEPLOY}
+COPY repository/org/fcrepo/xbean*.jar ${KARAF_DEPLOY}
 
 WORKDIR /opt/karaf/apache-karaf-${KARAF_VERSION}
 COPY repository/org/fcrepo/bundles.yml .

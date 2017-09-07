@@ -29,11 +29,11 @@ import java.net.URI;
 
 import javax.ws.rs.core.Link;
 
-import org.apache.http.annotation.NotThreadSafe;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.junit.Test;
+import org.modeshape.schematic.annotation.NotThreadSafe;
 
 /**
  * <p>FedoraNodesIT class.</p>

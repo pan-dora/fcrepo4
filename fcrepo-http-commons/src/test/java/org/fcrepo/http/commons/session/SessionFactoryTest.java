@@ -79,7 +79,7 @@ public class SessionFactoryTest {
 
     @Before
     public void setUp() {
-        testObj = new SessionFactory(mockRepo, mockTxService);
+        testObj = new SessionFactory(mockRepo, mockTxService, credentialsService);
         setField(testObj, "credentialsService", mockCredService);
         testObj.init();
     }
