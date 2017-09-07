@@ -8,13 +8,13 @@
 	<display-name>Fedora Repository</display-name>
 
 	<context-param>
-		<param-name>contextConfigLocation</param-name>
-		<param-value>WEB-INF/lib/spring/repository.xml</param-value>
+        <param-name>blueprintLocation</param-name>
+        <param-value>OSGI-INF/blueprint/blueprint.xml</param-value>
 	</context-param>
 
-	<listener>
-		<listener-class>org.fcrepo.http.commons.FedoraContextLoaderListener</listener-class>
-	</listener>
+    <listener>
+        <listener-class>org.apache.aries.blueprint.web.BlueprintContextListener</listener-class>
+    </listener>
 
   <servlet>
     <servlet-name>jersey-servlet</servlet-name>

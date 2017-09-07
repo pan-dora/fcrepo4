@@ -39,7 +39,6 @@ import org.fcrepo.kernel.api.services.BatchService;
 import com.google.common.annotations.VisibleForTesting;
 import org.slf4j.Logger;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 
 /**
  * This is part of the strawman implementation for Fedora batch operations This
@@ -51,7 +50,7 @@ import org.springframework.stereotype.Component;
  * @author ajs6f
  * @author acoburn
  */
-@Component
+
 public class BatchServiceImpl extends AbstractService implements BatchService {
 
     private static final Logger LOGGER = getLogger(BatchServiceImpl.class);

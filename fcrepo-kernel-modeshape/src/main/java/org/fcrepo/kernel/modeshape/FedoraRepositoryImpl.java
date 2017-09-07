@@ -15,23 +15,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.fcrepo.kernel.modeshape;
 
 import javax.jcr.Credentials;
 import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
+import javax.jcr.RepositoryFactory;
 
 import org.fcrepo.kernel.api.FedoraRepository;
 import org.fcrepo.kernel.api.FedoraSession;
 import org.fcrepo.kernel.api.exception.RepositoryRuntimeException;
+import org.modeshape.jcr.JcrRepositoryFactory;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * The basic abstraction for a Fedora repository
+ *
  * @author acoburn
  */
 public class FedoraRepositoryImpl implements FedoraRepository {
 
     private final Repository repository;
+
+    public Repository getRepository() throws RepositoryException {
+        Map params = new HashMap();
+        RepositoryFactory repoFactory = new JcrRepositoryFactory();
+        return repoFactory.getRepository(params);
+    }
 
     /**
      * Create a FedoraRepositoryImpl with a JCR-based Repository
@@ -81,7 +94,7 @@ public class FedoraRepositoryImpl implements FedoraRepository {
      */
     public static Repository getJcrRepository(final FedoraRepository repository) {
         if (repository instanceof FedoraRepositoryImpl) {
-            return ((FedoraRepositoryImpl)repository).getJcrRepository();
+            return ((FedoraRepositoryImpl) repository).getJcrRepository();
         }
         throw new ClassCastException("FedoraRepository is not a " + FedoraRepositoryImpl.class.getCanonicalName());
     }

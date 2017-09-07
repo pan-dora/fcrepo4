@@ -149,7 +149,7 @@ public class FedoraLdp extends ContentExposingResource {
 
     @PathParam("path") protected String externalPath;
 
-    @Inject private FedoraHttpConfiguration httpConfiguration;
+    private FedoraHttpConfiguration httpConfiguration;
 
     /**
      * Default JAX-RS entry point

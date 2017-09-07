@@ -38,8 +38,11 @@ import java.net.URI;
 @Component
 public class ExternalContentServiceImpl implements ExternalContentService {
 
-    @Inject
     private HttpClientConnectionManager connManager;
+
+    public void setHttpClientConnectionManager( HttpClientConnectionManager connManager ) {
+        this.connManager = connManager;
+    }
 
     /**
      * Retrieve the content at the URI using the global connection pool.

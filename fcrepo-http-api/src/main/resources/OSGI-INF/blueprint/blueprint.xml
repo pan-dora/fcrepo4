@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns:ext="http://aries.apache.org/blueprint/xmlns/blueprint-ext/v1.0.0"
+           xsi:schemaLocation="http://www.osgi.org/xmlns/blueprint/v1.0.0 https://osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
+       http://aries.apache.org/blueprint/xmlns/blueprint-ext/v1.0.0 http://aries.apache.org/schemas/blueprint-ext/blueprint-ext.xsd">
+
+    <ext:property-placeholder>
+        <ext:default-properties>
+            <ext:property name="fcrepo.http.ldp.putRequiresIfMatch" value="false"/>
+        </ext:default-properties>
+    </ext:property-placeholder>
+
+    <bean id="httpConfiguration" class="org.fcrepo.http.api.FedoraHttpConfiguration">
+        <property name="putRequiresIfMatch" value="false"/>
+    </bean>
+</blueprint>

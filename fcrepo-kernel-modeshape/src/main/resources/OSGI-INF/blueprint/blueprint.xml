@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns:ext="http://aries.apache.org/blueprint/xmlns/blueprint-ext/v1.0.0"
+           xsi:schemaLocation="
+       http://www.osgi.org/xmlns/blueprint/v1.0.0 https://osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
+       http://aries.apache.org/blueprint/xmlns/blueprint-ext/v1.0.0 http://aries.apache.org/schemas/blueprint-ext/blueprint-ext.xsd">
+
+    <service id="repository" interface="org.fcrepo.kernel.api.FedoraRepository">
+        <bean class="org.fcrepo.kernel.modeshape.FedoraRepositoryImpl" factory-method="getRepository">
+            <argument ref="repository"/>
+        </bean>
+    </service>
+
+    <service id="batchService" interface="org.fcrepo.kernel.api.BatchService">
+        <bean class="org.fcrepo.kernel.modeshape.services.BatchServiceImpl"/>
+    </service>
+
+    <service id="credentialsService" interface="org.fcrepo.kernel.api.services.CredentialsService">
+        <bean class="org.fcrepo.kernel.modeshape.services.CredentialsServiceImpl"/>
+    </service>
+
+    <service id="containerService" interface="org.fcrepo.kernel.api.services.ContainerService">
+        <bean class="org.fcrepo.kernel.modeshape.services.ContainerServiceImpl"/>
+    </service>
+
+    <service id="versionService" interface="org.fcrepo.kernel.api.services.VersionService">
+        <bean class="org.fcrepo.kernel.modeshape.services.VersionServiceImpl"/>
+    </service>
+
+    <service id="nodeService" interface="org.fcrepo.kernel.api.services.NodeService">
+        <bean class="org.fcrepo.kernel.modeshape.services.NodeServiceImpl"/>
+    </service>
+
+    <service id="binaryService" interface="org.fcrepo.kernel.api.services.BinaryService">
+        <bean class="org.fcrepo.kernel.modeshape.services.BinaryServiceImpl"/>
+    </service>
+
+    <service id="externalContentService" interface="org.fcrepo.kernel.api.services.ExternalContentService">
+        <bean class="org.fcrepo.kernel.modeshape.services.ExternalContentServiceImpl">
+            <property name="connManager" value="org.apache.http.conn.HttpClientConnectionManager"/>
+        </bean>
+    </service>
+
+    <service id="internalIdentifierConverter" interface="org.fcrepo.kernel.api.identifiers.InternalIdentifierConverter">
+        <bean class="org.fcrepo.kernel.modeshape.identifiers.HashConverter"/>
+    </service>
+
+</blueprint>

@@ -21,13 +21,12 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.fcrepo.kernel.api.services.CredentialsService;
 import org.modeshape.jcr.api.ServletCredentials;
-import org.springframework.stereotype.Component;
 
 /**
  * @author acoburn
  * @since Jun 2, 2016
  */
-@Component
+
 public class CredentialsServiceImpl implements CredentialsService {
 
     @Override

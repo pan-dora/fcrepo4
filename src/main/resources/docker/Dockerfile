@@ -10,6 +10,7 @@ COPY repository/org/fcrepo/fcrepo-kernel-modeshape/${version}/fcrepo-kernel-mode
 COPY repository/org/fcrepo/fcrepo-http-api/${version}/fcrepo-http-api-${version}.jar ${KARAF_DEPLOY}
 COPY repository/org/fcrepo/fcrepo-event-serialization/${version}/fcrepo-event-serialization-${version}.jar ${KARAF_DEPLOY}
 COPY repository/org/fcrepo/fcrepo-jms/${version}/fcrepo-jms-${version}.jar ${KARAF_DEPLOY}
+COPY repository/org/fcrepo/fcrepo-auth-common/${version}/fcrepo-auth-common-${version}.jar ${KARAF_DEPLOY}
 COPY repository/org/fcrepo/modeshape*.jar ${KARAF_DEPLOY}
 COPY repository/org/fcrepo/xbean*.jar ${KARAF_DEPLOY}
 
@@ -17,6 +18,9 @@ WORKDIR /opt/karaf/apache-karaf-${KARAF_VERSION}
 COPY repository/org/fcrepo/bundles.yml .
 RUN bin/start && \
 bin/client -r 10 -d 5  "feature:install pax-war" && \
+bin/client -r 10 -d 5  "feature:install blueprint-web" && \
+bin/client -r 10 -d 5  "feature:repo-add mvn:org.apache.activemq/activemq-karaf/${activemqVersion}/xml/features" && \
+bin/client -r 10 -d 5  "feature:install activemq-broker" && \
 cat bundles.yml | bin/client -b && \
 bin/stop
 
@@ -24,6 +28,7 @@ EXPOSE 8181
 
 RUN mkdir /mnt/fcrepo
 COPY repository/org/fcrepo/*.cfg etc/
+COPY repository/org/fcrepo/activemq.xml etc/
 COPY repository/org/fcrepo/entrypoint.sh /entrypoint.sh
 
 RUN chmod 700 /entrypoint.sh

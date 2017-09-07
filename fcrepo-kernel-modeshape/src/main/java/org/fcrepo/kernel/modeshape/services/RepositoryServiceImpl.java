@@ -54,7 +54,6 @@ import com.codahale.metrics.Timer;
 @Component
 public class RepositoryServiceImpl extends AbstractService implements RepositoryService {
 
-    @Inject
     private FedoraRepository repository;
 
     private static final Logger LOGGER = getLogger(RepositoryServiceImpl.class);

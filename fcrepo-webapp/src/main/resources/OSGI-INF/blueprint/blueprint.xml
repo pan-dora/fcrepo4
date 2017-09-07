@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns:ext="http://aries.apache.org/blueprint/xmlns/blueprint-ext/v1.0.0"
+           xsi:schemaLocation="
+       http://www.osgi.org/xmlns/blueprint/v1.0.0 https://osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
+       http://aries.apache.org/blueprint/xmlns/blueprint-ext/v1.0.0 http://aries.apache.org/schemas/blueprint-ext/blueprint-ext.xsd">
+
+    <ext:property-placeholder>
+        <ext:default-properties>
+            <ext:property name="repositoryConfiguration" value="classpath:/config/in-memory/repository.json"/>
+            <ext:property name="brokerURL" value="vm://localhost:61616?create=false"/>
+            <ext:property name="config" value="classpath:/config/activemq.xml"/>
+            <ext:property name="queueName" value="fedora"/>
+        </ext:default-properties>
+    </ext:property-placeholder>
+
+    <bean id="modeshapeRepofactory"
+          class="org.fcrepo.kernel.modeshape.spring.ModeShapeRepositoryFactoryBeanBundle">
+        <property name="repositoryConfiguration" value="${fcrepoModeshapeConfiguration}"/>
+    </bean>
+
+    <!-- Identifier translation chain
+    <bean id="internalIdentifierConverter" class="org.fcrepo.kernel.api.identifiers.InternalIdentifierConverter">
+        <property name="list">
+            <list>
+                <bean class="org.fcrepo.kernel.modeshape.identifiers.HashConverter"/>
+                <bean class="org.fcrepo.kernel.modeshape.identifiers.NamespaceConverter"/>
+            </list>
+        </property>
+    </bean>
+-->
+
+    <bean class="org.fcrepo.jms.JMSQueuePublisher"/>
+
+    <bean id="connectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+        <property name="brokerURL" value="${ACTIVEMQ_URI}"/>
+    </bean>
+    <!--
+       <bean id="jmsBroker" class="org.apache.activemq.xbean.BrokerFactoryBean">
+           <property name="config" value="${fcrepoActivemqConfiguration}"/>
+           <property name="start" value="true"/>
+       </bean>
+   -->
+       <!-- translates events into JMS header-only format-->
+    <bean class="org.fcrepo.jms.DefaultMessageFactory"/>
+
+    <!-- listener that moves JCR Events to the Fedora internal event bus -->
+    <bean class="org.fcrepo.kernel.modeshape.observer.SimpleObserver"/>
+
+    <!-- used by bean above to filter which events get put on the bus -->
+    <bean id="fedoraEventFilter" class="org.fcrepo.kernel.modeshape.observer.DefaultFilter"/>
+
+    <!-- used by observer bean to map JCR events into Fedora events -->
+    <bean id="fedoraEventMapper" class="org.fcrepo.kernel.modeshape.observer.eventmappings.AllNodeEventsOneEvent"/>
+
+    <!-- Fedora's lightweight internal event bus. Currently memory-resident.-->
+    <bean id="fedoraInternalEventBus" class="com.google.common.eventbus.EventBus"/>
+
+
+    <!-- ***********************************
+            Internal system configuration
+         ***********************************
+    <task id="taskScheduler"/>
+    <task:executor id="taskExecutor" pool-size="1"/>
+    <task:annotation-driven executor="taskExecutor" scheduler="taskScheduler"/>
+-->
+
+    <!-- Start the Modeshape JCR -->
+    <bean class="org.modeshape.jcr.ModeShapeEngine" init-method="start"/>
+
+    <!-- For the time being, load annotation config here too -->
+    <bean class="org.fcrepo.metrics.MetricsConfig"/>
+
+    <bean id="connectionManager" class="org.apache.http.impl.conn.PoolingHttpClientConnectionManager"/>
+
+    <!-- Generates HTTP Sessions -->
+    <bean class="org.fcrepo.http.commons.session.SessionFactory"/>
+
+</blueprint>

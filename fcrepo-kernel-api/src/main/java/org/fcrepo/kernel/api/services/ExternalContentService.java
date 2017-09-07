@@ -24,6 +24,7 @@ import java.net.URI;
 /**
  * @author cabeer
  */
+
 public interface ExternalContentService {
     /**
      * Fetch the content body at a given URI

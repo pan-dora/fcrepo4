@@ -15,7 +15,6 @@ plugins {
     id 'net.researchgate.release' version '2.6.0'
     id 'io.codearte.nexus-staging' version '0.9.0'
     id 'com.palantir.docker' version '0.13.0'
-    id 'org.dm.bundle' version '0.10.0'
 }
 
 ext {
@@ -49,6 +48,7 @@ configure(allprojects) { project ->
     ext.activemqVersion = "5.15.0"
     ext.awaitilityVersion = "1.7.0"
     ext.awsClientVersion = "1.11.188"
+    ext.blueprintVersion = "1.1.1"
     ext.commonscodecVersion = "1.10"
     ext.commonsIoVersion = "2.5"
     ext.commonslangVersion = "3.5"
@@ -95,7 +95,7 @@ configure(allprojects) { project ->
 
     ext.projectOsgiVersion = version.replaceAll("-SNAPSHOT", ".SNAPSHOT")
     ext.defaultOsgiImports = "org.osgi.service.blueprint;version='[1,2)',*"
-    ext.osgiVersion = '4.3.1'
+    ext.osgiVersion = '6.0.0'
     ext.paxExamVersion = '4.9.1'
     ext.karafVersion = '4.0.5'
     ext.fcrepoVersion = '4.7.1'
@@ -294,6 +294,15 @@ project("fcrepo-auth-common") {
     description = 'Fedora Repository Authorization Commons Module'
     dependencies {
         compile project(":fcrepo-kernel-api")
+        compile project(":fcrepo-http-commons")
+        compileOnly("javax:javaee-api:${javaeeApiVersion}")
+        compile("org.apache.httpcomponents:httpclient-osgi:${httpclientVersion}") {
+            exclude(module: 'commons-logging')
+        }
+        compile("org.apache.servicemix.bundles:org.apache.servicemix.bundles.spring-context:${springVersion}")
+        compile("org.apache.servicemix.bundles:org.apache.servicemix.bundles.spring-core:${springVersion}")
+        compile("org.apache.servicemix.bundles:org.apache.servicemix.bundles.spring-web:${springVersion}")
+        compile("org.glassfish.jersey.media:jersey-media-multipart:${jerseyVersion}")
         compile("org.modeshape:modeshape-web-jcr:${modeshapeVersion}")
         compile("org.modeshape:modeshape-jcr:${modeshapeVersion}") {
             exclude(module: 'netcdf')
@@ -304,34 +313,26 @@ project("fcrepo-auth-common") {
             exclude(module: 'bcmail-jdk15')
             exclude(module: 'bcprov-jdk15')
         }
-        compile project(":fcrepo-http-commons")
-        compile("org.apache.servicemix.bundles:org.apache.servicemix.bundles.spring-context:${springVersion}")
-        compile("org.apache.servicemix.bundles:org.apache.servicemix.bundles.spring-core:${springVersion}")
-        compile("org.apache.servicemix.bundles:org.apache.servicemix.bundles.spring-web:${springVersion}")
-        compile("org.glassfish.jersey.media:jersey-media-multipart:${jerseyVersion}")
-        compile("org.apache.httpcomponents:httpclient-osgi:${httpclientVersion}") {
-            exclude(module: 'commons-logging')
-        }
-        testCompile "com.palantir.docker.compose:docker-compose-rule-junit4:${dockerComposeRuleJunitVersion}"
-        testCompile("javax.annotation:javax.annotation-api:1.2")
-        testCompile("junit:junit:${junitVersion}")
+        testCompile project(":fcrepo-configs")
         testCompile project(":fcrepo-http-commons")
+        testCompile project(":fcrepo-kernel-modeshape")
+        testCompile project(":fcrepo-http-commons").sourceSets.test.output
+        testCompile "com.palantir.docker" +
+                ".compose:docker-compose-rule-junit4:${dockerComposeRuleJunitVersion}"
+        testCompile("javax.annotation:javax.annotation-api:1.2")
+        testCompile("javax.servlet:javax.servlet-api:${javaxServletapiVersion}")
+        testCompile("junit:junit:${junitVersion}")
+        testCompile("org.apache.servicemix.bundles:org.apache.servicemix.bundles.spring-test:${springVersion}")
+        testCompile("org.apache.servicemix.bundles:org.apache.servicemix.bundles.spring-web:${springVersion}")
         testCompile("org.glassfish.grizzly:grizzly-http-server:${grizzlyVersion}")
         testCompile("org.glassfish.grizzly:grizzly-http-servlet:${grizzlyVersion}")
         testCompile("org.glassfish.jersey.test-framework" +
                 ".providers:jersey-test-framework-provider-grizzly2:${jerseyVersion}")
         testCompile("org.glassfish.jersey.ext:jersey-spring3:${jerseyVersion}")
         testCompile("org.glassfish.jersey.core:jersey-common:${jerseyVersion}")
-        testCompile project(":fcrepo-configs")
-        testCompile("org.apache.servicemix.bundles:org.apache.servicemix.bundles.spring-test:${springVersion}")
-        testCompile("org.apache.servicemix.bundles:org.apache.servicemix.bundles.spring-web:${springVersion}")
-        testCompile project(":fcrepo-kernel-modeshape")
-        testCompile project(":fcrepo-http-commons").sourceSets.test.output
         testCompile("org.mockito:mockito-core:${mockitoVersion}") {
             exclude(module: 'hamcrest-core')
         }
-        testCompile("javax.servlet:javax.servlet-api:${javaxServletapiVersion}")
-        compileOnly("javax:javaee-api:${javaeeApiVersion}")
     }
 
     jar {
@@ -348,25 +349,25 @@ project("fcrepo-event-serialization") {
     description = 'Fedora Event Serialization'
     dependencies {
         compile project(":fcrepo-kernel-api")
+        compile("com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}")
+        compile("com.fasterxml.jackson.core:jackson-core:${jacksonVersion}")
+        compile("com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}")
+        compile("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${jacksonVersion}")
         compile("com.google.guava:guava:${guavaVersion}")
-        compile("org.apache.jena:jena-core:${jenaVersion}") {
-            exclude(module: 'log4j')
-            exclude(module: 'slf4j-log4j12')
-        }
         compile("org.apache.jena:jena-arq:${jenaVersion}") {
             exclude(module: 'log4j')
             exclude(module: 'slf4j-log4j12')
         }
-        compile("com.fasterxml.jackson.core:jackson-core:${jacksonVersion}")
-        compile("com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}")
-        compile("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${jacksonVersion}")
-        compile("com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}")
+        compile("org.apache.jena:jena-core:${jenaVersion}") {
+            exclude(module: 'log4j')
+            exclude(module: 'slf4j-log4j12')
+        }
+        testCompile("ch.qos.logback:logback-classic:${logbackVersion}")
+        testCompile("com.github.jsonld-java:jsonld-java:${jsonldVersion}")
         testCompile("junit:junit:${junitVersion}")
         testCompile("org.mockito:mockito-core:${mockitoVersion}") {
             exclude(module: 'hamcrest-core')
         }
-        testCompile("ch.qos.logback:logback-classic:${logbackVersion}")
-        testCompile("com.github.jsonld-java:jsonld-java:${jsonldVersion}")
     }
 
     jar {
@@ -384,79 +385,26 @@ project("fcrepo-http-api") {
     dependencies {
         compile project(":fcrepo-http-commons")
         compile project(":fcrepo-kernel-modeshape")
-        compile("com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}")
-        compile("org.apache.servicemix.bundles:org.apache.servicemix.bundles.spring-context:${springVersion}")
-        compile("io.dropwizard.metrics:metrics-annotation:${metricsVersion}")
-        compile("org.glassfish.jersey.core:jersey-server:${jerseyVersion}")
-        compile("org.apache.servicemix.bundles:org.apache.servicemix.bundles.spring-core:${springVersion}")
-        compile("org.apache.servicemix.bundles:org.apache.servicemix.bundles.spring-web:${springVersion}")
-        compile("org.apache.servicemix.bundles:org.apache.servicemix.bundles.spring-beans:${springVersion}")
-        compile("org.glassfish.jersey.core:jersey-common:${jerseyVersion}")
-        compile("org.glassfish.jersey.media:jersey-media-multipart:${jerseyVersion}")
-        compile("org.apache.httpcomponents:httpclient-osgi:${httpclientVersion}") {
-            exclude(module: 'commons-logging')
-        }
-        compile("org.apache.httpcomponents:httpclient-cache:${httpclientVersion}") {
-            exclude(module: 'commons-logging')
-        }
-        testCompile("org.glassfish.grizzly:grizzly-http-server:${grizzlyVersion}")
-        testCompile("org.glassfish.grizzly:grizzly-http-servlet:${grizzlyVersion}")
-        testCompile("org.glassfish.jersey.test-framework" +
-                ".providers:jersey-test-framework-provider-grizzly2:${jerseyVersion}")
-        testCompile project(":fcrepo-kernel-modeshape")
-        testCompile project(":fcrepo-configs")
-        testCompile project(":fcrepo-http-commons").sourceSets.test.output
-        testCompile project(":fcrepo-auth-common")
-        testCompile("ch.qos.logback:logback-classic:${logbackVersion}")
-        testCompile("junit:junit:${junitVersion}")
-        testCompile("org.glassfish.jersey.ext:jersey-spring3:${jerseyVersion}")
-        testCompile("org.apache.servicemix.bundles:org.apache.servicemix.bundles.spring-test:${springVersion}")
-        testCompile("org.apache.httpcomponents:httpmime:${httpmimeVersion}") {
-            exclude(module: 'commons-logging')
-        }
-        testCompile("org.mockito:mockito-core:${mockitoVersion}") {
-            exclude(module: 'hamcrest-core')
-        }
-        testCompile("nu.validator.htmlparser:htmlparser:1.4")
+        compileOnly("javax.servlet:javax.servlet-api:${javaxServletapiVersion}")
+        compileOnly("javax:javaee-api:${javaeeApiVersion}")
         compileOnly("org.modeshape:modeshape-jcr:${modeshapeVersion}") {
             exclude(module: 'commons-codec')
             exclude(module: 'snappy-java')
             exclude(module: 'servlet-api')
             exclude(module: 'xercesImpl')
         }
-        compileOnly("javax.servlet:javax.servlet-api:${javaxServletapiVersion}")
-        compileOnly("javax:javaee-api:${javaeeApiVersion}")
-    }
-
-    jar {
-        manifest {
-            instruction 'Import-Package', "${defaultOsgiImports}"
-            instruction 'Export-Package', "org.fcrepo.http.api;version=${projectOsgiVersion}"
+        compile("com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}")
+        compile("io.dropwizard.metrics:metrics-annotation:${metricsVersion}")
+        compile("org.apache.httpcomponents:httpclient-osgi:${httpclientVersion}") {
+            exclude(module: 'commons-logging')
         }
-    }
-}
-
-project("fcrepo-http-commons") {
-    apply plugin: "osgi"
-
-    description = 'Fedora Repository HTTP Commons Module'
-    dependencies {
-        compile project(":fcrepo-metrics")
-        compile("org.modeshape:modeshape-jcr-api:${modeshapeVersion}")
-        compile("org.apache.commons:commons-lang3:${commonslangVersion}")
-        compile("org.glassfish.jersey.core:jersey-server:${jerseyVersion}")
-        compile project(":fcrepo-kernel-modeshape")
-        compile("org.slf4j:slf4j-api:${slf4jVersion}")
+        compile("org.apache.httpcomponents:httpclient-cache:${httpclientVersion}") {
+            exclude(module: 'commons-logging')
+        }
         compile("org.apache.servicemix.bundles:org.apache.servicemix.bundles.spring-context:${springVersion}")
         compile("org.apache.servicemix.bundles:org.apache.servicemix.bundles.spring-core:${springVersion}")
         compile("org.apache.servicemix.bundles:org.apache.servicemix.bundles.spring-web:${springVersion}")
-        compile("javax.jcr:jcr:${jcrVersion}")
-        compile("org.glassfish.jersey.core:jersey-common:${jerseyVersion}")
-        compile("org.glassfish.jersey.media:jersey-media-multipart:${jerseyVersion}")
-        compile("org.glassfish.jersey.media:jersey-media-json-jackson:${jerseyVersion}")
-        compile("com.fasterxml.jackson.core:jackson-core:${jacksonVersion}")
-        compile("com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}")
-        compile("com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}")
+        compile("org.apache.servicemix.bundles:org.apache.servicemix.bundles.spring-beans:${springVersion}")
         compile("org.apache.servicemix.bundles:org.apache.servicemix.bundles.velocity:${velocityVersion}")
         compile("org.apache.servicemix.bundles:org.apache.servicemix.bundles.velocity-tools:${velocityToolsVersion}") {
             exclude(module: 'commons-logging')
@@ -469,16 +417,88 @@ project("fcrepo-http-commons") {
             exclude(module: 'struts-tiles')
             exclude(module: 'servlet-api')
         }
+        compile("org.glassfish.jersey.core:jersey-common:${jerseyVersion}")
+        compile("org.glassfish.jersey.media:jersey-media-multipart:${jerseyVersion}")
+        compile("org.glassfish.jersey.core:jersey-server:${jerseyVersion}")
+        testCompile project(":fcrepo-kernel-modeshape")
+        testCompile project(":fcrepo-configs")
+        testCompile project(":fcrepo-http-commons").sourceSets.test.output
+        testCompile project(":fcrepo-auth-common")
+        testCompile("ch.qos.logback:logback-classic:${logbackVersion}")
+        testCompile("junit:junit:${junitVersion}")
+        testCompile("nu.validator.htmlparser:htmlparser:1.4")
+        testCompile("org.glassfish.grizzly:grizzly-http-server:${grizzlyVersion}")
+        testCompile("org.glassfish.grizzly:grizzly-http-servlet:${grizzlyVersion}")
+        testCompile("org.glassfish.jersey.test-framework" +
+                ".providers:jersey-test-framework-provider-grizzly2:${jerseyVersion}")
+        testCompile("org.glassfish.jersey.ext:jersey-spring3:${jerseyVersion}")
+        testCompile("org.apache.servicemix.bundles:org.apache.servicemix.bundles.spring-test:${springVersion}")
+        testCompile("org.apache.httpcomponents:httpmime:${httpmimeVersion}") {
+            exclude(module: 'commons-logging')
+        }
+        testCompile("org.mockito:mockito-core:${mockitoVersion}") {
+            exclude(module: 'hamcrest-core')
+        }
+    }
+
+    configurations {
+        velocity
+    }
+
+    dependencies {
+        velocity "org.apache.servicemix.bundles:org.apache.servicemix.bundles.velocity:${velocityVersion}"
+        velocity "org.apache.servicemix.bundles:org.apache.servicemix.bundles.velocity-tools:${velocityToolsVersion}"
+    }
+
+    jar {
+        into("lib") {
+            from configurations.velocity
+        }
+        manifest {
+            instruction 'Import-Package', "!org.apache.velocity*," +
+                    "${defaultOsgiImports}"
+            instruction 'Export-Package', "org.fcrepo.http.api;version=${projectOsgiVersion}"
+            instruction 'Bundle-ClassPath', "., lib/org.apache.servicemix.bundles.velocity-1.7_3.jar," +
+                    "lib/org.apache.servicemix.bundles.velocity-tools-2.0_1.jar," +
+                    "lib/commons-collections-3.2.1.jar," +
+                    "lib/commons-lang-2.4.jar,views/"
+        }
+    }
+}
+
+project("fcrepo-http-commons") {
+    apply plugin: "osgi"
+
+    description = 'Fedora Repository HTTP Commons Module'
+    dependencies {
+        compile project(":fcrepo-metrics")
+        compile project(":fcrepo-kernel-modeshape")
+        compileOnly("javax:javaee-api:${javaeeApiVersion}")
+        compileOnly("javax.servlet:javax.servlet-api:${javaxServletapiVersion}")
+        compile("com.fasterxml.jackson.core:jackson-core:${jacksonVersion}")
+        compile("com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}")
+        compile("com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}")
         compile("commons-digester:commons-digester:1.8") {
             exclude(module: 'commons-logging')
             exclude(module: 'log4j')
             exclude(module: 'commons-beanutils')
         }
+        compile("javax.jcr:jcr:${jcrVersion}")
+        compile("org.apache.commons:commons-lang3:${commonslangVersion}")
+        compile("org.apache.servicemix.bundles:org.apache.servicemix.bundles.spring-context:${springVersion}")
+        compile("org.apache.servicemix.bundles:org.apache.servicemix.bundles.spring-core:${springVersion}")
+        compile("org.apache.servicemix.bundles:org.apache.servicemix.bundles.spring-web:${springVersion}")
+        compile("org.glassfish.jersey.core:jersey-common:${jerseyVersion}")
+        compile("org.glassfish.jersey.media:jersey-media-multipart:${jerseyVersion}")
+        compile("org.glassfish.jersey.media:jersey-media-json-jackson:${jerseyVersion}")
+        compile("org.glassfish.jersey.core:jersey-server:${jerseyVersion}")
+        compile("org.modeshape:modeshape-jcr-api:${modeshapeVersion}")
+        compile("org.slf4j:slf4j-api:${slf4jVersion}")
+        testCompile project(":fcrepo-configs")
+        testCompile("ch.qos.logback:logback-classic:${logbackVersion}")
         testCompile("org.mockito:mockito-core:${mockitoVersion}") {
             exclude(module: 'hamcrest-core')
         }
-        testCompile("ch.qos.logback:logback-classic:${logbackVersion}")
-        testCompile project(":fcrepo-configs")
         testCompile("org.glassfish.grizzly:grizzly-http-server:${grizzlyVersion}")
         testCompile("org.glassfish.grizzly:grizzly-http-servlet:${grizzlyVersion}")
         testCompile("org.glassfish.jersey.test-framework" +
@@ -487,8 +507,7 @@ project("fcrepo-http-commons") {
         testCompile("org.apache.httpcomponents:httpcore:${httpcoreVersion}")
         testCompile("javax.annotation:javax.annotation-api:1.2")
         testCompile("javax.jcr:jcr:${jcrVersion}")
-        compileOnly("javax:javaee-api:${javaeeApiVersion}")
-        compileOnly("javax.servlet:javax.servlet-api:${javaxServletapiVersion}")
+
         testCompile("org.modeshape:modeshape-jcr:${modeshapeVersion}") {
             exclude(module: 'snappy-java')
         }
@@ -506,12 +525,12 @@ project("fcrepo-IT") {
     description = 'Fedora Repository Integration Test Module'
 
     dependencies {
+        testCompile("junit:junit:${junitVersion}")
         testCompile("org.apache.httpcomponents:httpclient-osgi:${httpclientVersion}") {
             exclude(module: 'commons-logging')
         }
-        testCompile("junit:junit:${junitVersion}")
-        testCompile("org.slf4j:slf4j-api:${slf4jVersion}")
         testCompile("org.modeshape:modeshape-common:${modeshapeVersion}")
+        testCompile("org.slf4j:slf4j-api:${slf4jVersion}")
     }
 
 }
@@ -519,31 +538,31 @@ project("fcrepo-IT:fcrepo-IT-auth") {
     description = 'Fedora Repository Auth Integration Tests Module'
 
     dependencies {
-        testCompile project(":fcrepo-IT").sourceSets.test.output
         testCompile project(":fcrepo-auth-common")
-        testCompile "com.palantir.docker.compose:docker-compose-rule-junit4:${dockerComposeRuleJunitVersion}"
-        testCompile("javax.annotation:javax.annotation-api:1.2")
-        testCompile("junit:junit:${junitVersion}")
-        testCompile project(":fcrepo-http-commons")
-        testCompile("org.glassfish.grizzly:grizzly-http-server:${grizzlyVersion}")
-        testCompile("org.glassfish.grizzly:grizzly-http-servlet:${grizzlyVersion}")
-        testCompile("org.glassfish.jersey.test-framework" +
-                ".providers:jersey-test-framework-provider-grizzly2:${jerseyVersion}")
-        testCompile("org.glassfish.jersey.ext:jersey-spring3:${jerseyVersion}")
-        testCompile("org.glassfish.jersey.core:jersey-common:${jerseyVersion}")
         testCompile project(":fcrepo-configs")
+        testCompile project(":fcrepo-http-commons").sourceSets.test.output
+        testCompile project(":fcrepo-http-commons")
+        testCompile project(":fcrepo-kernel-modeshape")
+        testCompile project(":fcrepo-IT").sourceSets.test.output
+        testCompile "com.palantir.docker" +
+                ".compose:docker-compose-rule-junit4:${dockerComposeRuleJunitVersion}"
+        testCompile("javax.annotation:javax.annotation-api:1.2")
+        testCompile("javax.servlet:javax.servlet-api:${javaxServletapiVersion}")
+        testCompile("junit:junit:${junitVersion}")
         testCompile("org.apache.servicemix.bundles:org.apache.servicemix.bundles.spring-test:${springVersion}") {
             exclude(module: 'commons-logging')
         }
         testCompile("org.apache.servicemix.bundles:org.apache.servicemix.bundles.spring-web:${springVersion}") {
             exclude(module: 'commons-logging')
         }
-        testCompile project(":fcrepo-kernel-modeshape")
-        testCompile project(":fcrepo-http-commons").sourceSets.test.output
+        testCompile("org.glassfish.grizzly:grizzly-http-server:${grizzlyVersion}")
+        testCompile("org.glassfish.grizzly:grizzly-http-servlet:${grizzlyVersion}")
+        testCompile("org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-grizzly2:${jerseyVersion}")
+        testCompile("org.glassfish.jersey.ext:jersey-spring3:${jerseyVersion}")
+        testCompile("org.glassfish.jersey.core:jersey-common:${jerseyVersion}")
         testCompile("org.mockito:mockito-core:${mockitoVersion}") {
             exclude(module: 'hamcrest-core')
         }
-        testCompile("javax.servlet:javax.servlet-api:${javaxServletapiVersion}")
     }
 
 }
@@ -552,40 +571,43 @@ project("fcrepo-IT:fcrepo-IT-ldp") {
     description = 'Fedora Repository LDP integration tests Module'
 
     dependencies {
-        testCompile project(":fcrepo-IT").sourceSets.test.output
-        testCompile("junit:junit:${junitVersion}")
-        testCompile("org.w3:ldp-testsuite:0.2.0-SNAPSHOT")
         testCompile project(":fcrepo-http-commons").sourceSets.test.output
-        testCompile "com.palantir.docker.compose:docker-compose-rule-junit4:${dockerComposeRuleJunitVersion}"
-        testCompile("org.apache.jena:jena-arq:${jenaVersion}")
-        testCompile("org.testng:testng:6.8.8")
-        testCompile("org.rendersnake:rendersnake:1.9.0")
+        testCompile project(":fcrepo-IT").sourceSets.test.output
+        testCompile("ch.qos.logback:logback-classic:${logbackVersion}")
         testCompile("com.jayway.restassured:rest-assured:2.8.0")
-        testCompile("org.jboss.resteasy:resteasy-jaxrs:3.0.8.Final")
-        testCompile("org.openrdf.sesame:sesame-rio-api:4.1.2")
+        testCompile "com.palantir.docker" +
+                ".compose:docker-compose-rule-junit4:${dockerComposeRuleJunitVersion}"
+        testCompile("junit:junit:${junitVersion}")
+        testCompile("org.apache.jena:jena-arq:${jenaVersion}")
         testCompile("org.apache.marmotta:marmotta-commons:${marmottaVersion}")
         testCompile("org.apache.marmotta:marmotta-ldp:${marmottaVersion}")
-        testCompile("ch.qos.logback:logback-classic:${logbackVersion}")
-
+        testCompile("org.jboss.resteasy:resteasy-jaxrs:3.0.8.Final")
+        testCompile("org.openrdf.sesame:sesame-rio-api:4.1.2")
+        testCompile("org.rendersnake:rendersnake:1.9.0")
+        testCompile("org.testng:testng:6.8.8")
+        testCompile("org.w3:ldp-testsuite:0.2.0-SNAPSHOT")
     }
 }
 
 project("fcrepo-IT:fcrepo-IT-rdf") {
     description = 'Fedora Repository RDF integration tests Module'
     dependencies {
-        testCompile project(":fcrepo-IT").sourceSets.test.output
-        testCompile project(":fcrepo-http-api").sourceSets.test.output
         compile("org.apache.servicemix.bundles:org.apache.servicemix.bundles.spring-core:${springVersion}")
         compile("org.apache.servicemix.bundles:org.apache.servicemix.bundles.spring-web:${springVersion}")
         compile("org.glassfish.jersey.core:jersey-common:${jerseyVersion}")
-        testCompile("junit:junit:${junitVersion}")
-        testCompile("org.apache.servicemix.bundles:org.apache.servicemix.bundles.spring-test:${springVersion}")
+        testCompile project(":fcrepo-IT").sourceSets.test.output
+        testCompile project(":fcrepo-http-api").sourceSets.test.output
         testCompile project(":fcrepo-configs")
         testCompile project(":fcrepo-http-api")
         testCompile project(":fcrepo-http-api").sourceSets.test.output
         testCompile project(":fcrepo-http-commons").sourceSets.test.output
         testCompile project(":fcrepo-auth-common")
         testCompile project(":fcrepo-http-commons")
+
+
+        testCompile("junit:junit:${junitVersion}")
+        testCompile("org.apache.servicemix.bundles:org.apache.servicemix.bundles.spring-test:${springVersion}")
+
         testCompile("org.glassfish.grizzly:grizzly-http-server:${grizzlyVersion}")
         testCompile("org.glassfish.grizzly:grizzly-http-servlet:${grizzlyVersion}")
         testCompile("org.glassfish.jersey.test-framework" +
@@ -705,6 +727,7 @@ project("fcrepo-kernel-modeshape") {
         compile("org.jboss.jbossts:jbossjta:4.16.6.Final")
         compile("org.glassfish.hk2.external:javax.inject:${hk2Version}")
         compile("com.google.guava:guava:${guavaVersion}")
+        compile("org.osgi:org.osgi.core:${osgiVersion}")
         compile("org.slf4j:slf4j-api:${slf4jVersion}")
         compile("org.apache.servicemix.bundles:org.apache.servicemix.bundles.spring-context:${springVersion}")
         compile("org.apache.servicemix.bundles:org.apache.servicemix.bundles.spring-core:${springVersion}")
@@ -739,7 +762,8 @@ project("fcrepo-kernel-modeshape") {
     jar {
         manifest {
             instruction 'Import-Package', "${defaultOsgiImports}"
-            instruction 'Export-Package', "org.fcrepo.kernel.modeshape.*;version=${projectOsgiVersion}"
+            instruction 'Export-Package', "org.fcrepo.kernel.modeshape.*;" +
+                    "version=${projectOsgiVersion}"
         }
     }
 
@@ -750,19 +774,19 @@ project("fcrepo-metrics") {
 
     description = 'Fedora Repository Metrics Module'
     dependencies {
+        compileOnly("javax.servlet:javax.servlet-api:${javaxServletapiVersion}")
         compile("io.dropwizard.metrics:metrics-core:${metricsVersion}")
         compile("io.dropwizard.metrics:metrics-graphite:${metricsVersion}")
         compile("io.dropwizard.metrics:metrics-jersey2:${metricsVersion}") {
             exclude(module: 'jersey-server')
         }
         compile("io.dropwizard.metrics:metrics-servlets:${metricsVersion}")
-        compile("org.apache.servicemix.bundles:org.apache.servicemix.bundles.spring-context:${springVersion}")
         compile("org.apache.servicemix.bundles:org.apache.servicemix.bundles.spring-beans:${springVersion}")
+        compile("org.apache.servicemix.bundles:org.apache.servicemix.bundles.spring-context:${springVersion}")
         testCompile("junit:junit:${junitVersion}")
         testCompile("org.mockito:mockito-core:${mockitoVersion}") {
             exclude(module: 'hamcrest-core')
         }
-        compileOnly("javax.servlet:javax.servlet-api:${javaxServletapiVersion}")
     }
 
     jar {
@@ -778,16 +802,17 @@ project("fcrepo-webapp") {
 
     description = 'Fedora Repository Deployable Web Application'
     dependencies {
-        compile("ch.qos.logback:logback-classic:${logbackVersion}")
         compile project(":fcrepo-kernel-modeshape")
         compile project(":fcrepo-jms")
         compile project(":fcrepo-http-api")
         compile project(":fcrepo-auth-common")
+        compile("ch.qos.logback:logback-classic:${logbackVersion}")
+        compile("io.dropwizard.metrics:metrics-core:${metricsVersion}")
+        compile("io.dropwizard.metrics:metrics-servlets:${metricsVersion}")
+        compile("org.apache.aries.blueprint:org.apache.aries.blueprint.web:${blueprintVersion}")
         compile("org.eclipse.jetty:jetty-webapp:${jettyVersion}") {
             exclude(module: 'javax.servlet')
         }
-        compile("io.dropwizard.metrics:metrics-core:${metricsVersion}")
-        compile("io.dropwizard.metrics:metrics-servlets:${metricsVersion}")
         compile("org.eclipse.jetty:jetty-servlets:${jettyVersion}")
         compile("org.eclipse.jetty:jetty-deploy:${jettyVersion}")
         compile("org.eclipse.jetty:jetty-jmx:${jettyVersion}")
@@ -833,7 +858,8 @@ project("fcrepo-webapp") {
         testCompile("org.apache.servicemix.bundles:org.apache.servicemix.bundles.spring-test:${springVersion}") {
             exclude(module: 'commons-logging')
         }
-        testCompile "com.palantir.docker.compose:docker-compose-rule-junit4:${dockerComposeRuleJunitVersion}"
+        testCompile "com.palantir.docker" +
+                ".compose:docker-compose-rule-junit4:${dockerComposeRuleJunitVersion}"
         testCompile("org.apache.httpcomponents:httpmime:${httpmimeVersion}") {
             exclude(module: 'commons-logging')
         }
@@ -872,20 +898,21 @@ project("fcrepo-webapp") {
 
         manifest {
             instruction 'Import-Package', "org.fcrepo.http.commons,org.springframework.web.filter," +
-            "org.springframework.context.config,org.apache.xbean.spring.context.v2;version=${xbeanVersion}," +
-            "org.springframework.beans.factory.xml,org.springframework.scheduling.config," +
-            "org.springframework.scheduling.concurrent,org.fcrepo.kernel.modeshape.spring," +
-            "org.fcrepo.kernel.modeshape.observer," +
-            "org.fcrepo.kernel.modeshape.observer.eventmappings," +
-            "org.fcrepo.kernel.modeshape.identifiers," +
-            "org.glassfish.jersey.servlet,org.fcrepo.jms,org.apache.activemq," +
-            "org.apache.activemq.xbean,com.google.common.eventbus," +
-            "org.springframework.scheduling.annotation,org.modeshape.jcr," +
-            "org.fcrepo.metrics,org.apache.http.impl.conn,org.fcrepo.http.commons.session," +
-            "org.apache.http.annotation,org.apache.activemq.broker.region.policy," +
-            "org.apache.activemq.util,org.apache.activemq.broker.jmx," +
-            "org.apache.activemq.store.kahadb,org.apache.activemq.usage," +
-            "org.apache.activemq.broker,org.apache.activemq.hooks,${defaultOsgiImports}"
+                    "org.springframework.context.config,org.apache.xbean.spring.context.v2;version=${xbeanVersion}," +
+                    "org.springframework.beans.factory.xml,org.springframework.scheduling.config," +
+                    "org.springframework.scheduling.concurrent,org.fcrepo.kernel.modeshape.spring," +
+                    "org.fcrepo.kernel.modeshape.observer," +
+                    "org.fcrepo.kernel.modeshape.observer.eventmappings," +
+                    "org.fcrepo.kernel.modeshape.identifiers," +
+                    "org.glassfish.jersey.servlet,org.fcrepo.jms,org.apache.activemq," +
+                    "org.apache.activemq.xbean,com.google.common.eventbus," +
+                    "org.springframework.scheduling.annotation,org.modeshape.jcr," +
+                    "org.fcrepo.metrics,org.apache.http.impl.conn,org.fcrepo.http.commons.session," +
+                    "org.apache.http.annotation,org.apache.activemq.broker.region.policy," +
+                    "org.apache.activemq.util,org.apache.activemq.broker.jmx," +
+                    "org.apache.activemq.store.kahadb,org.apache.activemq.usage," +
+                    "org.apache.activemq.broker,org.apache.activemq.hooks," +
+                    "org.fcrepo.auth.common,${defaultOsgiImports}"
             instruction 'Export-Package', "org.fcrepo.webapp;version=${projectOsgiVersion}"
             instruction 'Web-ContextPath', '/fcrepo'
             instruction 'Bundle-ClassPath', "WEB-INF/lib,javax:javaee-api:${javaeeApiVersion}"

@@ -60,13 +60,10 @@ public class SessionFactory {
 
     private static final Logger LOGGER = getLogger(SessionFactory.class);
 
-    @Inject
     private FedoraRepository repo;
 
-    @Inject
     private BatchService batchService;
 
-    @Inject
     private CredentialsService credentialsService;
 
     /**

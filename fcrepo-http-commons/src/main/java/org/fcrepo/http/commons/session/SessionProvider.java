@@ -37,10 +37,8 @@ import org.slf4j.Logger;
 @RequestScoped
 public class SessionProvider implements Factory<HttpSession> {
 
-    @Inject
     SessionFactory sessionFactory;
 
-    @Inject
     BatchService batchService;
 
     private HttpServletRequest request;

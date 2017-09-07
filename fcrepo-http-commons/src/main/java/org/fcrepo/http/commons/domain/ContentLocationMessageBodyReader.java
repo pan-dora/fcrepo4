@@ -47,7 +47,7 @@ public class ContentLocationMessageBodyReader implements MessageBodyReader<Input
     /**
      * The fcrepo node service
      */
-    @Inject
+
     private ExternalContentService contentService;
 
     private static final Class<ContentLocation> contentLocationClass = ContentLocation.class;

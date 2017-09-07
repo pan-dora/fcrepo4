@@ -1,4 +1,4 @@
-bundle:install \
+bundle:install -s \
 mvn:com.amazonaws/aws-java-sdk-osgi/${awsClientVersion} \
 mvn:com.datastax.cassandra/cassandra-driver-core/2.1.10.3 \
 mvn:com.fasterxml.jackson.core/jackson-annotations/${jacksonVersion} \
@@ -63,8 +63,6 @@ mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-core/${sp
 mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-expression/${springVersion} \
 mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-jms/${springVersion} \
 mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-web/${springVersion} \
-mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.velocity-tools/${velocityToolsVersion} \
-mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.velocity/${velocityVersion} \
 mvn:org.apache.thrift/libthrift/${thriftVersion} \
 mvn:org.apache.tika/tika-core/${tikaVersion} \
 wrap:mvn:org.aspectj/aspectjweaver/1.8.10 \
